@@ -1,5 +1,7 @@
 # TODO
 
+- Replace `[Row|Column][Untyped]` with `[Row|Column]Range`
+
 - Merge `SparseCell.location` and `SparseCell.position` into one single field
 - Add `DenseCell`
 
