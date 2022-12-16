@@ -17,7 +17,7 @@ buildType "unittest" {
 	buildOptions "unittests" "debugMode" "debugInfo"
 	versions "mir_test"
 	dflags "-allinst" "-checkaction=context"
-	dflags "-fsanitize=address" platform="posix-ldc"
+	dflags "-fsanitize=address" "-fsanitize=leak" platform="posix-ldc"
 }
 
 buildType "unittest-dip1000" {
@@ -25,7 +25,7 @@ buildType "unittest-dip1000" {
 	versions "mir_test"
 	dflags "-allinst" "-checkaction=context"
 	dflags "-preview=dip1000" platform="dmd" # dmd-only until ldc 1.31.0 is released
-	dflags "-fsanitize=address" platform="posix-ldc"
+	dflags "-fsanitize=address" "-fsanitize=leak" platform="posix-ldc"
 }
 
 buildType "unittest-release" {
