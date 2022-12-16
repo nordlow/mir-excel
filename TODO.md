@@ -1,5 +1,7 @@
 # TODO
 
+- Remove commented out D code
+
 - Use mir-core UDAs to ignore certain fields?
 
 - Clean up `readSharedEntries`
