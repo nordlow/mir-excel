@@ -1,5 +1,7 @@
 # TODO
 
+- Ask Ilya if and how we should use mir.string_map in table rows
+
 - Use STAX XML parser via calls to parseXML instead of decodeXML
 
 - Remove commented out D code
