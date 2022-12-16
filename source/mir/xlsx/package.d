@@ -1357,7 +1357,6 @@ version(mir_test) @safe unittest {
 	// writeln(s.table[0][0].xmlValue);
 	assert(s.table[0][0].xmlValue.to!long(),
 			format("%s", s.table[0][0].xmlValue));
-	//assert(s.table[0][0].canConvertTo(CellType.bool_));
 }
 
 version(mir_test) unittest {
