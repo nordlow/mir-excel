@@ -1241,7 +1241,7 @@ SheetNameId[] sheetNames(in string filename) @trusted {
 version(mir_test)
     @safe
     unittest {
-        auto r = sheetNames("test/data/multitable.xlsx");
+        auto r = Workbook.fromFile("test/data/multitable.xlsx").sheetNameIds();
         assert(r
             == [SheetNameId("wb1", 1, "rId2"), SheetNameId("wb2", 2, "rId3"),
                 SheetNameId("Sheet3", 3, "rId4")]);
@@ -1250,7 +1250,7 @@ version(mir_test)
 version(mir_test)
     @safe
     unittest {
-        auto r = sheetNames("test/data/sheetnames.xlsx");
+        auto r = Workbook.fromFile("test/data/sheetnames.xlsx").sheetNameIds();
         assert(r == [SheetNameId("A & B ;", 1, "rId2")]);
     }
 
