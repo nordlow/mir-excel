@@ -1,5 +1,7 @@
 # TODO
 
+- Use STAX XML parser via calls to parseXML instead of decodeXML
+
 - Remove commented out D code
 
 - Clean up `readSharedEntries`
