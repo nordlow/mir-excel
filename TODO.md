@@ -1,9 +1,6 @@
 # TODO
 
-- Replace `[Row|Column][Untyped]` with `[Row|Column]Range`
-
 - Merge `SparseCell.location` and `SparseCell.position` into one single field
-- Add `DenseCell`
 
 - Ask Ilya if and how we should use mir.string_map. As element type for instance
   in `Table.withHeaders(headers).rows`
