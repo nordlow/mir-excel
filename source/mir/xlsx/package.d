@@ -269,7 +269,7 @@ struct Cell {
  *
  * Ref: https://en.wikipedia.org/wiki/Jagged_array
  */
-deprecated("Use DenseTable instead") struct Table {
+struct JaggedTable {
     inout(Cell[])[] cells() inout @safe pure nothrow @nogc {
         pragma(inline, true);
         return _cells;
@@ -280,10 +280,10 @@ deprecated("Use DenseTable instead") struct Table {
     alias _cells this; /** For backwards compatibility. */
 
     @SILignore
-    RowWidth width; // TODO: use
+    RowWidth width; // TODO: use or remove
 }
 
-/** Excel table as a multidimensional array.
+/** Excel jaggedTable as a multidimensional array.
  *
  * Ref: https://en.wikipedia.org/wiki/Array_(data_type)
  */
@@ -314,14 +314,14 @@ struct DenseTable {
     auto byRow() const scope @safe pure nothrow {
         struct Result { // TODO: reuse ndslice range instead?
             bool empty() const @property @safe pure nothrow @nogc {
-                return _rowOffset == _table.extent.height;
+                return _rowOffset == _denseTable.extent.height;
             }
 
             inout(const(Cell))[] front() inout @property
                     @safe pure nothrow @nogc {
                 assert(!empty);
-                return _table._cells[_rowOffset * _table.extent.width
-                    .. (_rowOffset + 1) * _table.extent.width];
+                return _denseTable._cells[_rowOffset * _denseTable.extent.width
+                    .. (_rowOffset + 1) * _denseTable.extent.width];
             }
 
             void popFront() @safe pure nothrow @nogc {
@@ -330,7 +330,7 @@ struct DenseTable {
             }
 
         private:
-            const DenseTable _table;
+            const DenseTable _denseTable;
             RowOffset _rowOffset = RowOffset(0);
         }
 
@@ -371,18 +371,18 @@ struct Sheet {
     private immutable(Cell)[] _cells; ///< Cells of sheet.
 
     @SILignore
-    inout(Table) table() inout return scope @property
+    inout(JaggedTable) jaggedTable() inout return scope @property
             @trusted pure nothrow { // TODO: make mutable?
         pragma(inline, true);
-        if (_table is _table.init)
-            // TODO: remove this if and when we decide if table should be removed:
-            *(cast(Table*) &_table) = (cast() this).makeTable();
-        return _table;
+        if (_jaggedTable is _jaggedTable.init)
+            // TODO: remove this if and when we decide if jaggedTable should be removed:
+            *(cast(JaggedTable*) &_jaggedTable) = (cast() this).makeJaggedTable();
+        return _jaggedTable;
     }
 
     @SILignore
-    deprecated("Use denseTable instead") private
-    Table makeTable() const @trusted pure nothrow {
+    private
+    JaggedTable makeJaggedTable() const @trusted pure nothrow {
         Cell[][] tab = new Cell[][](extent.height, extent.width);
         foreach (const ref cell; cells)
             tab[cell.position.row][cell.position.col] = cell;
@@ -398,6 +398,7 @@ struct Sheet {
             *(cast(DenseTable*) &_denseTable) = (cast() this).makeDenseTable();
         return _denseTable;
     }
+	alias table = denseTable;
 
     @SILignore
     private DenseTable makeDenseTable() const @trusted pure nothrow {
@@ -408,7 +409,7 @@ struct Sheet {
     }
 
     @SILignore
-    private Table _table;
+    private JaggedTable _jaggedTable;
 
     @SILignore
     private DenseTable _denseTable;
@@ -633,7 +634,7 @@ struct RowUntyped {
 
     this(Sheet* sheet, RowOffset row, ColumnOffset startColumn,
          ColumnOffset endColumn) pure nothrow /* @nogc */ @safe {
-        assert(sheet.table.length == sheet.extent.height);
+        assert(sheet.jaggedTable.length == sheet.extent.height);
         this.sheet = sheet;
         this.row = row;
         this.startColumn = startColumn;
@@ -699,7 +700,7 @@ struct ColumnUntyped {
 
     this(Sheet* sheet, ColumnOffset col, RowOffset startRow,
          RowOffset endRow) @safe {
-        assert(sheet.table.length == sheet.extent.height);
+        assert(sheet.jaggedTable.length == sheet.extent.height);
         this.sheet = sheet;
         this.col = col;
         this.startRow = startRow;
@@ -1736,12 +1737,12 @@ version(mir_test)
         import std.math : isClose;
         auto r = readSheet("test/data/multitable.xlsx", "wb1");
         {
-            const e = r.table[12][5];
+            const e = r.jaggedTable[12][5];
             assert(isClose(e.xmlValue.to!double(), 26.74), format("%s", e));
         }
 
         {
-            const e = r.table[13][5];
+            const e = r.jaggedTable[13][5];
             assert(isClose(e.xmlValue.to!double(), -26.74), format("%s", e));
         }
 
@@ -1814,8 +1815,8 @@ version(mir_test)
             );
         }
 
-        assert(s.table.length == 16);
-        foreach (const Cell[] row; s.table)
+        assert(s.jaggedTable.length == 16);
+        foreach (const Cell[] row; s.jaggedTable)
             assert(row.length == 29);
     }
 
@@ -1870,10 +1871,10 @@ version(mir_test)
     @safe
     unittest {
         auto s = readSheet("test/data/multitable.xlsx", "Sheet3");
-        // writeln(s.table[0][0].xmlValue);
-        assert(s.table[0][0].xmlValue.to!long(),
-               format("%s", s.table[0][0].xmlValue));
-        //assert(s.table[0][0].canConvertTo(CellType.bool_));
+        // writeln(s.jaggedTable[0][0].xmlValue);
+        assert(s.jaggedTable[0][0].xmlValue.to!long(),
+               format("%s", s.jaggedTable[0][0].xmlValue));
+        //assert(s.jaggedTable[0][0].canConvertTo(CellType.bool_));
     }
 
 version(mir_test)
@@ -1912,7 +1913,7 @@ version(mir_test)
         auto sheet = readSheet("test/data/testworkbook.xlsx", "ws1");
         //writefln("%(%s\n%)", sheet.cells);
         //writeln(sheet.toString());
-        assert(sheet.table[2][3].xmlValue.to!long() == 1337);
+        assert(sheet.jaggedTable[2][3].xmlValue.to!long() == 1337);
 
         auto c =
             sheet.getColumnLong(ColumnOffset(3), RowOffset(2), RowOffset(5));
@@ -1921,11 +1922,11 @@ version(mir_test)
 
         auto c2 =
             sheet.getColumnString(ColumnOffset(4), RowOffset(2), RowOffset(5));
-        string f2 = sheet.table[2][4].xmlValue;
+        string f2 = sheet.jaggedTable[2][4].xmlValue;
         assert(f2 == "hello", f2);
-        f2 = sheet.table[3][4].xmlValue;
+        f2 = sheet.jaggedTable[3][4].xmlValue;
         assert(f2 == "sil", f2);
-        f2 = sheet.table[4][4].xmlValue;
+        f2 = sheet.jaggedTable[4][4].xmlValue;
         assert(f2 == "foo", f2);
         auto r2 = ["hello", "sil", "foo"];
         assert(equal(c2, r2), format("%s", c2));
