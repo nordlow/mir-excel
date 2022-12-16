@@ -1,8 +1,15 @@
 # TODO
 
-- Remove commented out D code
+- Incorporate changes from branch better-extract-api
 
-- Use mir-core UDAs to ignore certain fields?
+- Add
+
+alias SILignore = reflectIgnore!"SIL";
+alias SILdoc = ReflectDoc!"SIL";
+
+- Deprecate `alias Table` in favor of `JaggedTable`
+
+- Remove commented out D code
 
 - Clean up `readSharedEntries`
 
