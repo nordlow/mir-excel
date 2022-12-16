@@ -217,14 +217,14 @@ alias Data = Value; // for backwards compatibility
 
 /// Sheet cell that holds position for use in sparse storage.
 struct SparseCell {
-    this(string location, RowOffset row, string t, string r, string v, string f,
+    this(string location, RowOffset row, string t, string r, string v, string formula,
          string xmlValue, Position position) @safe pure {
         this.location = location;
         this.row = row;
         this.t = t;
         this.r = r;
         this.v = v;
-        this.f = f;
+        this.formula = formula;
         this.xmlValue = xmlValue;
         this.position = position;
         this.value = xmlValue;
@@ -249,12 +249,7 @@ struct SparseCell {
     string v; // value or ptr
 
     @SILignore
-    deprecated("Use formula instead") string f; // formula
-
-    @SILignore @property
-    string formula() const @safe pure nothrow @nogc {
-        return f;
-    }
+    string formula; // formula
 
     @SILignore
     string xmlValue; ///< Value stored in cell. TODO: convert this
@@ -1608,7 +1603,7 @@ Cell[] readCells(ZipArchive za, ArchiveMember am) /* TODO: @safe */ {
             if (c.type == EntityType.elementStart) {
                 auto f = c.children.filter!(c => c.name == "f");
                 if (!f.empty && f.front.type == EntityType.elementStart) {
-                    tmp.f = f.front.children[0].text;
+                    tmp.formula = f.front.children[0].text;
                 }
             }
 
