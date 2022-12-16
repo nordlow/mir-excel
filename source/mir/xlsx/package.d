@@ -846,7 +846,7 @@ struct Workbook {
 version(mir_benchmark)
 	@safe
 	unittest {
-		enum path = "50xP_sheet1.xlsx";
+		enum path = "test/data/50xP_sheet1.xlsx";
 		import std.meta : AliasSeq;
 		static void use_sheetNamesAndreadSheet() @trusted {
 			foreach (const i, const ref s; sheetNames(path)) {
@@ -907,7 +907,7 @@ SheetNameId[] sheetNames(in string filename) @trusted {
 version(mir_test)
 	@safe
 	unittest {
-		auto r = sheetNames("multitable.xlsx");
+		auto r = sheetNames("test/data/multitable.xlsx");
 		assert(r
 			== [SheetNameId("wb1", 1, "rId2"), SheetNameId("wb2", 2, "rId3"),
 			    SheetNameId("Sheet3", 3, "rId4")]);
@@ -916,7 +916,7 @@ version(mir_test)
 version(mir_test)
 	@safe
 	unittest {
-		auto r = sheetNames("sheetnames.xlsx");
+		auto r = sheetNames("test/data/sheetnames.xlsx");
 		assert(r == [SheetNameId("A & B ;", 1, "rId2")]);
 	}
 
@@ -1367,7 +1367,7 @@ version(mir_test)
 	@safe
 	unittest {
 		import std.math : isClose;
-		auto r = readSheet("multitable.xlsx", "wb1");
+		auto r = readSheet("test/data/multitable.xlsx", "wb1");
 		assert(isClose(r.table[12][5].xmlValue.to!double(), 26.74),
 		       format("%s", r.table[12][5]));
 
@@ -1378,7 +1378,7 @@ version(mir_test)
 version(mir_test)
 	@safe
 	unittest {
-		auto s = readSheet("multitable.xlsx", "wb1");
+		auto s = readSheet("test/data/multitable.xlsx", "wb1");
 		const expectedCells = [
 			const(Cell)("", 3, "s", "D3", "0", "", "a", const(Pos)(2, 3)),
 			const(Cell)("", 3, "s", "E3", "1", "", "b", const(Pos)(2, 4)),
@@ -1426,7 +1426,7 @@ version(mir_test)
 version(mir_test)
 	@safe
 	unittest {
-		auto s = readSheet("multitable.xlsx", "wb1");
+		auto s = readSheet("test/data/multitable.xlsx", "wb1");
 
 		auto r = s.iterateRow!long(15, 1, 6);
 
@@ -1446,7 +1446,7 @@ version(mir_test)
 version(mir_test)
 	@safe
 	unittest {
-		auto s = readSheet("multitable.xlsx", "wb2");
+		auto s = readSheet("test/data/multitable.xlsx", "wb2");
 		//writefln("%s\n%(%s\n%)", s.maxPos, s.cells);
 		auto rslt = s.iterateColumn!Date(1, 1, 6);
 		auto rsltUt =
@@ -1467,31 +1467,46 @@ version(mir_test)
 version(mir_test)
 	@safe
 	unittest {
-		auto s = readSheet("multitable.xlsx", "Sheet3");
+		auto s = readSheet("test/data/multitable.xlsx", "Sheet3");
 		// writeln(s.table[0][0].xmlValue);
 		assert(s.table[0][0].xmlValue.to!long(),
 		       format("%s", s.table[0][0].xmlValue));
 	}
 
 version(mir_test)
-	unittest {
-		import std.file : dirEntries, SpanMode;
-		import std.traits : EnumMembers;
-		foreach (const de;
-			dirEntries("xlsx_files/", "*.xlsx", SpanMode.depth)
-				.filter!(a => a.name != "xlsx_files/data03.xlsx")) {
-			auto sn = sheetNames(de.name);
-			foreach (const ref s; sn) {
-				auto sheet = readSheet(de.name, s.name);
-				foreach (const ref cell; sheet.cells) {}
-			}
-		}
-	}
+    @system
+    unittest {
+        import std.file : dirEntries, SpanMode;
+        import std.algorithm.searching : endsWith;
+        size_t totalSheetCount;
+        size_t totalCellCount;
+
+        /* Reading the file row_col_format16.xlsx causes out of memory because one of its cells position address strings is
+     * mapped to the column index 16384.
+     */
+        foreach (const de;
+            dirEntries("test/data/xlsx_files/", "*.xlsx", SpanMode.depth)
+                .filter!(a => (!a.name.endsWith(
+                    "data02.xlsx", "data03.xlsx", "data04.xlsx",
+                    "row_col_format16.xlsx", "row_col_format18.xlsx")))) {
+            auto sn = sheetNames(de.name);
+            foreach (const s; sn) {
+                totalSheetCount += 1;
+                auto sheet = readSheet(de.name, s.name);
+                foreach (const cell; sheet.cells) {
+                    totalCellCount += 1;
+                }
+            }
+        }
+
+        assert(totalSheetCount == 551);
+        assert(totalCellCount == 4860);
+    }
 
 version(mir_test)
 	@safe
 	unittest {
-		auto sheet = readSheet("testworkbook.xlsx", "ws1");
+		auto sheet = readSheet("test/data/testworkbook.xlsx", "ws1");
 		//writefln("%(%s\n%)", sheet.cells);
 		//writeln(sheet.toString());
 		assert(sheet.table[2][3].xmlValue.to!long() == 1337);
@@ -1515,7 +1530,7 @@ version(mir_test)
 	@safe
 	unittest {
 		import std.math : isClose;
-		auto sheet = readSheet("toto.xlsx", "Trades");
+		auto sheet = readSheet("test/data/toto.xlsx", "Trades");
 
 		// writefln("%(%s\n%)", sheet.cells);
 
@@ -1528,7 +1543,7 @@ version(mir_test)
 version(mir_test)
 	@safe
 	unittest {
-		const sheet = readSheet("leading_zeros.xlsx", "Sheet1");
+		const sheet = readSheet("test/data/leading_zeros.xlsx", "Sheet1");
 		auto a2 = sheet.cells.filter!(c => c.r == "A2");
 		assert(!a2.empty);
 		assert(a2.front.xmlValue == "0012", format("%s", a2.front));
@@ -1537,7 +1552,7 @@ version(mir_test)
 version(mir_test)
 	@safe
 	unittest {
-		auto s = readSheet("datetimes.xlsx", "Sheet1");
+		auto s = readSheet("test/data/datetimes.xlsx", "Sheet1");
 		//writefln("%s\n%(%s\n%)", s.maxPos, s.cells);
 		auto rslt = s.iterateColumn!DateTime(0, 0, 2);
 		assert(!rslt.empty);
