@@ -1,6 +1,10 @@
 # TODO
 
-- Ask Ilya if and how we should use mir.string_map in table rows
+- Merge `SparseCell.location` and `SparseCell.position` into one single field
+- Add `DenseCell`
+
+- Ask Ilya if and how we should use mir.string_map. As element type for instance
+  in `Table.withHeaders(headers).rows`
 
 - Use STAX XML parser via calls to parseXML instead of decodeXML
 
