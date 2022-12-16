@@ -215,8 +215,8 @@ alias Value =
 /// ditto
 alias Data = Value; // for backwards compatibility
 
-/// Sheet Cell.
-struct Cell {
+/// Sheet cell that holds position for use in sparse storage.
+struct SparseCell {
     this(string location, RowOffset row, string t, string r, string v, string f,
          string xmlValue, Position position) @safe pure {
         this.location = location;
@@ -264,6 +264,7 @@ struct Cell {
 
     Value value; ///< Decoded value.
 }
+alias Cell = SparseCell;
 
 /** Excel table as a jagged array.
  *
