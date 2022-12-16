@@ -306,11 +306,13 @@ struct DenseTable {
             return [start, end];
         }
 
+	@SILignore
     inout(Cell)[] cells() inout @safe pure nothrow @nogc {
         pragma(inline, true);
         return _cells;
     }
 
+	@SILignore
     auto byRow() const scope @safe pure nothrow {
         struct Result { // TODO: reuse ndslice range instead?
             bool empty() const @property @safe pure nothrow @nogc {
