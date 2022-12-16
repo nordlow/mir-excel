@@ -11,6 +11,7 @@ importPaths "source"
 
 dependency "dxml" version="~>0.4.0"
 dependency "mir-core" version="*"
+dependency "mir-ion" version="*"
 
 buildType "unittest" {
 	buildOptions "unittests" "debugMode" "debugInfo"
