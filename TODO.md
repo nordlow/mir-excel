@@ -1,14 +1,5 @@
 # TODO
 
-- Incorporate changes from branch better-extract-api
-
-- Add
-
-alias SILignore = reflectIgnore!"SIL";
-alias SILdoc = ReflectDoc!"SIL";
-
-- Deprecate `alias Table` in favor of `JaggedTable`
-
 - Remove commented out D code
 
 - Clean up `readSharedEntries`
