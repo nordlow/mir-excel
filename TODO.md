@@ -1,5 +1,7 @@
 # TODO
 
+- Make `RowRange` and `ColumnRange` @safe now that they store parenting Sheet by Value
+
 - Merge `SparseCell.location` and `SparseCell.position` into one single field
 
 - Ask Ilya if and how we should use mir.string_map. As element type for instance
