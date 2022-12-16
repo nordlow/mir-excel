@@ -26,12 +26,12 @@ import dxml.util : decodeXML;
 version(mir_profileGC)
 	enum runCount = 1;
 else version(mir_benchmark)
-    enum runCount = 10;
+	enum runCount = 10;
 
 version(mir_benchmark)
-    enum tme = true;            // time me
+	enum tme = true; // time me
 else
-	enum tme = false;			// don’t time
+	enum tme = false; // don’t time
 
 /** Cell position row 0-based offset. */
 alias RowOffset = uint;
@@ -54,27 +54,27 @@ struct Pos {
 /** Excel cell address in the format "A1", "A2", ....
  */
 struct Address {
-    string value;
+	string value;
 }
 
 /** Excel table start position/address.
  */
 struct Start {
-    Algebraic!(Address, Pos) value;
+	Algebraic!(Address, Pos) value;
 }
 
 /** Excel table extents as width * height.
  */
 struct Extent {
-    size_t width;
-    size_t height;
+	size_t width;
+	size_t height;
 }
 
 /** Excel sheet region.
  */
 struct Region {
-    Start start;
-    Extent extent;
+	Start start;
+	Extent extent;
 }
 
 /** Set of Excel sheet regions.
@@ -97,8 +97,7 @@ struct Cell {
 }
 
 /// Cell Type.
-deprecated("this type is unused and will therefore be removed")
-enum CellType {
+deprecated("this type is unused and will therefore be removed") enum CellType {
 	datetime,
 	timeofday,
 	date,
@@ -114,25 +113,28 @@ alias SILignore = reflectIgnore!"SIL";
 struct Table {
 	/* TODO: Should we add rows()/columns() or byRow()/byColumn() or both? */
 	/* TODO: Should both rows() and columns() return `Cell[][]` or `struct Row` and `struct Column` */
-    @SILignore
+	@SILignore
 	Cell[][] _;
-	alias _ this;		/** For backwards compatibility. */
+	alias _ this; /** For backwards compatibility. */
 }
 
 /// Sheet.
 struct Sheet {
 	import std.ascii : toUpper;
 
-	@property const(Cell)[] cells() const return scope @safe pure nothrow @nogc {
+	@property
+	const(Cell)[] cells() const return scope @safe pure nothrow @nogc {
 		return _cells;
 	}
 
-	const string name;			///< Name of sheet.
-	private Cell[] _cells;		///< Cells of sheet.
-	Table table;				// TODO: make this read-only and lazily constructed behind a property
+	const string name; ///< Name of sheet.
+	private Cell[] _cells; ///< Cells of sheet.
+	Table
+		table; // TODO: make this read-only and lazily constructed behind a property
 	const Pos maxPos;
 
-	@property string toString() const scope @safe pure {
+	@property
+	string toString() const scope @safe pure {
 		import std.array : appender;
 		auto result = appender!(typeof(return));
 		toString(result);
@@ -149,6 +151,7 @@ struct Sheet {
 				maxCol[idx] = maxCol[idx] < s.length ? s.length : maxCol[idx];
 			}
 		}
+
 		maxCol[] += 1;
 
 		foreach (const ref row; this.table) {
@@ -159,12 +162,13 @@ struct Sheet {
 	}
 
 	void printTable() const scope @trusted {
-		writeln(this);			// uses toString(Sink)
+		writeln(this); // uses toString(Sink)
 	}
 
 	// Column
 
-	Iterator!T getColumn(T)(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	Iterator!T getColumn(T)(size_t col, size_t startRow,
+	                        size_t endRow) return scope @trusted {
 		auto c = this.iterateColumn!T(col, startRow, endRow);
 		return typeof(return)(c.array);
 	}
@@ -174,48 +178,65 @@ struct Sheet {
 		return getColumn!(%1$s)(col, startRow, endRow);
 	}
 	};
-	static foreach (T; ["long", "double", "string", "Date", "TimeOfDay",
-			"DateTime"])
-	{
+	static foreach (T;
+		["long", "double", "string", "Date", "TimeOfDay", "DateTime"]
+	) {
 		mixin(format(t, T, T[0].toUpper ~ T[1 .. $]));
 	}
 
-	ColumnUntyped iterateColumnUntyped(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	ColumnUntyped iterateColumnUntyped(size_t col, size_t startRow,
+	                                   size_t endRow) return scope @trusted {
 		return typeof(return)(&this, col, startRow, endRow);
 	}
 
-	Column!(T) iterateColumn(T)(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	Column!(T) iterateColumn(T)(size_t col, size_t startRow,
+	                            size_t endRow) return scope @trusted {
 		return typeof(return)(&this, col, startRow, endRow);
 	}
 
-	Column!(long) iterateColumnLong(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	Column!(long) iterateColumnLong(size_t col, size_t startRow,
+	                                size_t endRow) return scope @trusted {
 		return typeof(return)(&this, col, startRow, endRow);
 	}
 
-	Column!(double) iterateColumnDouble(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	Column!(double) iterateColumnDouble(size_t col, size_t startRow,
+	                                    size_t endRow) return scope @trusted {
 		return typeof(return)(&this, col, startRow, endRow);
 	}
 
-	Column!(string) iterateColumnString(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	Column!(string) iterateColumnString(size_t col, size_t startRow,
+	                                    size_t endRow) return scope @trusted {
 		return typeof(return)(&this, col, startRow, endRow);
 	}
 
-	Column!(DateTime) iterateColumnDateTime(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	Column!(DateTime) iterateColumnDateTime(
+		size_t col,
+		size_t startRow,
+		size_t endRow
+	) return scope @trusted {
 		return typeof(return)(&this, col, startRow, endRow);
 	}
 
-	Column!(Date) iterateColumnDate(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	Column!(Date) iterateColumnDate(size_t col, size_t startRow,
+	                                size_t endRow) return scope @trusted {
 		return typeof(return)(&this, col, startRow, endRow);
 	}
 
-	Column!(TimeOfDay) iterateColumnTimeOfDay(size_t col, size_t startRow, size_t endRow) return scope @trusted {
+	Column!(TimeOfDay) iterateColumnTimeOfDay(
+		size_t col,
+		size_t startRow,
+		size_t endRow
+	) return scope @trusted {
 		return typeof(return)(&this, col, startRow, endRow);
 	}
 
 	// Row
 
-	Iterator!T getRow(T)(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
-		return typeof(return)(this.iterateRow!T(row, startColumn, endColumn).array); // TODO: why .array?
+	Iterator!T getRow(T)(size_t row, size_t startColumn,
+	                     size_t endColumn) return scope @trusted {
+		return typeof(return)(
+			this.iterateRow!T(row, startColumn, endColumn).array
+		); // TODO: why .array?
 	}
 
 	private enum t2 = q{
@@ -223,40 +244,52 @@ struct Sheet {
 		return getRow!(%1$s)(row, startColumn, endColumn);
 	}
 	};
-	static foreach (T; ["long", "double", "string", "Date", "TimeOfDay", "DateTime"])
-	{
+	static foreach (T;
+		["long", "double", "string", "Date", "TimeOfDay", "DateTime"]
+	) {
 		mixin(format(t2, T, T[0].toUpper ~ T[1 .. $]));
 	}
 
-	RowUntyped iterateRowUntyped(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
+	RowUntyped iterateRowUntyped(size_t row, size_t startColumn,
+	                             size_t endColumn) return scope @trusted {
 		return typeof(return)(&this, row, startColumn, endColumn);
 	}
 
-	Row!(T) iterateRow(T)(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
+	Row!(T) iterateRow(T)(size_t row, size_t startColumn,
+	                      size_t endColumn) return scope @trusted {
 		return typeof(return)(&this, row, startColumn, endColumn);
 	}
 
-	Row!(long) iterateRowLong(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
+	Row!(long) iterateRowLong(size_t row, size_t startColumn,
+	                          size_t endColumn) return scope @trusted {
 		return typeof(return)(&this, row, startColumn, endColumn);
 	}
 
-	Row!(double) iterateRowDouble(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
+	Row!(double) iterateRowDouble(size_t row, size_t startColumn,
+	                              size_t endColumn) return scope @trusted {
 		return typeof(return)(&this, row, startColumn, endColumn);
 	}
 
-	Row!(string) iterateRowString(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
+	Row!(string) iterateRowString(size_t row, size_t startColumn,
+	                              size_t endColumn) return scope @trusted {
 		return typeof(return)(&this, row, startColumn, endColumn);
 	}
 
-	Row!(DateTime) iterateRowDateTime(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
+	Row!(DateTime) iterateRowDateTime(size_t row, size_t startColumn,
+	                                  size_t endColumn) return scope @trusted {
 		return typeof(return)(&this, row, startColumn, endColumn);
 	}
 
-	Row!(Date) iterateRowDate(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
+	Row!(Date) iterateRowDate(size_t row, size_t startColumn,
+	                          size_t endColumn) return scope @trusted {
 		return typeof(return)(&this, row, startColumn, endColumn);
 	}
 
-	Row!(TimeOfDay) iterateRowTimeOfDay(size_t row, size_t startColumn, size_t endColumn) return scope @trusted {
+	Row!(TimeOfDay) iterateRowTimeOfDay(
+		size_t row,
+		size_t startColumn,
+		size_t endColumn
+	) return scope @trusted {
 		return typeof(return)(&this, row, startColumn, endColumn);
 	}
 }
@@ -268,7 +301,8 @@ struct Iterator(T) {
 		this.data = data;
 	}
 
-	@property bool empty() const pure nothrow @nogc {
+	@property
+	bool empty() const pure nothrow @nogc {
 		return this.data.empty;
 	}
 
@@ -276,7 +310,8 @@ struct Iterator(T) {
 		this.data.popFront();
 	}
 
-	@property T front() {
+	@property
+	T front() {
 		return this.data.front;
 	}
 
@@ -298,7 +333,8 @@ struct RowUntyped {
 	const size_t endColumn;
 	size_t cur;
 
-	this(Sheet* sheet, size_t row, size_t startColumn, size_t endColumn) pure nothrow @nogc @safe {
+	this(Sheet* sheet, size_t row, size_t startColumn,
+	     size_t endColumn) pure nothrow @nogc @safe {
 		assert(sheet.table.length == sheet.maxPos.row + 1);
 		this.sheet = sheet;
 		this.row = row;
@@ -307,7 +343,8 @@ struct RowUntyped {
 		this.cur = this.startColumn;
 	}
 
-	@property bool empty() const pure nothrow @nogc @safe {
+	@property
+	bool empty() const pure nothrow @nogc @safe {
 		return this.cur >= this.endColumn;
 	}
 
@@ -319,7 +356,8 @@ struct RowUntyped {
 		return this;
 	}
 
-	@property inout(Cell) front() inout pure nothrow @nogc @safe {
+	@property
+	inout(Cell) front() inout pure nothrow @nogc @safe {
 		return this.sheet.table[this.row][this.cur];
 	}
 }
@@ -334,7 +372,8 @@ struct Row(T) {
 		this.read();
 	}
 
-	@property bool empty() const pure nothrow @nogc {
+	@property
+	bool empty() const pure nothrow @nogc {
 		return this.ru.empty;
 	}
 
@@ -371,7 +410,8 @@ struct ColumnUntyped {
 		this.cur = this.startRow;
 	}
 
-	@property bool empty() const pure nothrow @nogc @safe {
+	@property
+	bool empty() const pure nothrow @nogc @safe {
 		return this.cur >= this.endRow;
 	}
 
@@ -383,7 +423,8 @@ struct ColumnUntyped {
 		return this;
 	}
 
-	@property Cell front() @safe {
+	@property
+	Cell front() @safe {
 		return this.sheet.table[this.cur][this.col];
 	}
 }
@@ -399,7 +440,8 @@ struct Column(T) {
 		this.read();
 	}
 
-	@property bool empty() const pure nothrow @nogc {
+	@property
+	bool empty() const pure nothrow @nogc {
 		return this.cu.empty;
 	}
 
@@ -419,18 +461,24 @@ struct Column(T) {
 	}
 }
 
-version(mir_test) @safe unittest {
-	import std.range : isForwardRange;
-	import std.meta : AliasSeq;
-	static foreach (T; AliasSeq!(long,double,DateTime,TimeOfDay,Date,string)) {{
-		alias C = Column!T;
-		alias R = Row!T;
-		alias I = Iterator!T;
-		static assert(isForwardRange!C, C.stringof);
-		static assert(isForwardRange!R, R.stringof);
-		static assert(isForwardRange!I, I.stringof);
-	}}
-}
+version(mir_test)
+	@safe
+	unittest {
+		import std.range : isForwardRange;
+		import std.meta : AliasSeq;
+		static foreach (T;
+			AliasSeq!(long, double, DateTime, TimeOfDay, Date, string)
+		) {
+			{
+				alias C = Column!T;
+				alias R = Row!T;
+				alias I = Iterator!T;
+				static assert(isForwardRange!C, C.stringof);
+				static assert(isForwardRange!R, R.stringof);
+				static assert(isForwardRange!I, I.stringof);
+			}
+		}
+	}
 
 Date longToDate(long d) @safe {
 	// modifed from https://www.codeproject.com/Articles/2750/
@@ -439,7 +487,7 @@ Date longToDate(long d) @safe {
 	// Excel/Lotus 123 have a bug with 29-02-1900. 1900 is not a
 	// leap year, but Excel/Lotus 123 think it is...
 	if (d == 60) {
-		return Date(1900, 2,  29);
+		return Date(1900, 2, 29);
 	} else if (d < 60) {
 		// Because of the 29-02-1900 bug, any serial date
 		// under 60 is one off... Compensate.
@@ -447,16 +495,16 @@ Date longToDate(long d) @safe {
 	}
 
 	// Modified Julian to DMY calculation with an addition of 2415019
-	int l = cast(int)d + 68569 + 2415019;
-	const int n = int(( 4 * l ) / 146097);
-	l = l - int(( 146097 * n + 3 ) / 4);
-	const int i = int(( 4000 * ( l + 1 ) ) / 1461001);
-	l = l - int(( 1461 * i ) / 4) + 31;
-	const int j = int(( 80 * l ) / 2447);
-	const nDay = l - int(( 2447 * j ) / 80);
+	int l = cast(int) d + 68569 + 2415019;
+	const int n = int((4 * l) / 146097);
+	l = l - int((146097 * n + 3) / 4);
+	const int i = int((4000 * (l + 1)) / 1461001);
+	l = l - int((1461 * i) / 4) + 31;
+	const int j = int((80 * l) / 2447);
+	const nDay = l - int((2447 * j) / 80);
 	l = int(j / 11);
-	const int nMonth = j + 2 - ( 12 * l );
-	const int nYear = 100 * ( n - 49 ) + i + l;
+	const int nMonth = j + 2 - (12 * l);
+	const int nYear = 100 * (n - 49) + i + l;
 	return Date(nYear, nMonth, nDay);
 }
 
@@ -471,13 +519,11 @@ long dateToLong(Date d) @safe {
 	}
 
 	// DMY to Modified Julian calculated with an extra subtraction of 2415019.
-	long nSerialDate =
-			int(( 1461 * ( d.year + 4800 + int(( d.month - 14 ) / 12) ) ) / 4) +
-			int(( 367 * ( d.month - 2 - 12 *
-				( ( d.month - 14 ) / 12 ) ) ) / 12) -
-				int(( 3 * ( int(( d.year + 4900
-				+ int(( d.month - 14 ) / 12) ) / 100) ) ) / 4) +
-				d.day - 2415019 - 32075;
+	long nSerialDate = int(
+			(1461 * (d.year + 4800 + int((d.month - 14) / 12))) / 4)
+		+ int((367 * (d.month - 2 - 12 * ((d.month - 14) / 12))) / 12)
+		- int((3 * (int((d.year + 4900 + int((d.month - 14) / 12)) / 100))) / 4)
+		+ d.day - 2415019 - 32075;
 
 	if (nSerialDate < 60) {
 		// Because of the 29-02-1900 bug, any serial date
@@ -488,14 +534,16 @@ long dateToLong(Date d) @safe {
 	return nSerialDate;
 }
 
-version(mir_test) @safe unittest {
-	auto ds = [ Date(1900,2,1), Date(1901, 2, 28), Date(2019, 06, 05) ];
-	foreach (const d; ds) {
-		const long l = dateToLong(d);
-		const Date r = longToDate(l);
-		assert(r == d, format("%s %s", r, d));
+version(mir_test)
+	@safe
+	unittest {
+		auto ds = [Date(1900, 2, 1), Date(1901, 2, 28), Date(2019, 06, 05)];
+		foreach (const d; ds) {
+			const long l = dateToLong(d);
+			const Date r = longToDate(l);
+			assert(r == d, format("%s %s", r, d));
+		}
 	}
-}
 
 TimeOfDay doubleToTimeOfDay(double s) @safe {
 	import core.stdc.math : lround;
@@ -514,17 +562,19 @@ double timeOfDayToDouble(TimeOfDay tod) @safe {
 	return (h + m + s) / (24.0 * 60.0 * 60.0);
 }
 
-version(mir_test) @safe unittest {
-	auto tods = [ TimeOfDay(23, 12, 11), TimeOfDay(11, 0, 11),
-		 TimeOfDay(0, 0, 0), TimeOfDay(0, 1, 0),
-		 TimeOfDay(23, 59, 59), TimeOfDay(0, 0, 0)];
-	foreach (const tod; tods) {
-		const double d = timeOfDayToDouble(tod);
-		assert(d <= 1.0, format("%s", d));
-		TimeOfDay r = doubleToTimeOfDay(d);
-		assert(r == tod, format("%s %s", r, tod));
+version(mir_test)
+	@safe
+	unittest {
+		auto tods =
+			[TimeOfDay(23, 12, 11), TimeOfDay(11, 0, 11), TimeOfDay(0, 0, 0),
+			 TimeOfDay(0, 1, 0), TimeOfDay(23, 59, 59), TimeOfDay(0, 0, 0)];
+		foreach (const tod; tods) {
+			const double d = timeOfDayToDouble(tod);
+			assert(d <= 1.0, format("%s", d));
+			TimeOfDay r = doubleToTimeOfDay(d);
+			assert(r == tod, format("%s %s", r, tod));
+		}
 	}
-}
 
 double datetimeToDouble(DateTime dt) @safe {
 	const double d = dateToLong(dt.date);
@@ -533,34 +583,36 @@ double datetimeToDouble(DateTime dt) @safe {
 }
 
 DateTime doubleToDateTime(double d) @safe {
-	long l = cast(long)d;
+	long l = cast(long) d;
 	Date dt = longToDate(l);
 	TimeOfDay t = doubleToTimeOfDay(d - l);
 	return DateTime(dt, t);
 }
 
-version(mir_test) @safe unittest {
-	auto ds = [ Date(1900,2,1), Date(1901, 2, 28), Date(2019, 06, 05) ];
-	auto tods = [ TimeOfDay(23, 12, 11), TimeOfDay(11, 0, 11),
-		 TimeOfDay(0, 0, 0), TimeOfDay(0, 1, 0),
-		 TimeOfDay(23, 59, 59), TimeOfDay(0, 0, 0)];
-	foreach (const d; ds) {
-		foreach (const tod; tods) {
-			DateTime dt = DateTime(d, tod);
-			double dou = datetimeToDouble(dt);
+version(mir_test)
+	@safe
+	unittest {
+		auto ds = [Date(1900, 2, 1), Date(1901, 2, 28), Date(2019, 06, 05)];
+		auto tods =
+			[TimeOfDay(23, 12, 11), TimeOfDay(11, 0, 11), TimeOfDay(0, 0, 0),
+			 TimeOfDay(0, 1, 0), TimeOfDay(23, 59, 59), TimeOfDay(0, 0, 0)];
+		foreach (const d; ds) {
+			foreach (const tod; tods) {
+				DateTime dt = DateTime(d, tod);
+				double dou = datetimeToDouble(dt);
 
-			Date rd = longToDate(cast(long)dou);
-			assert(rd == d, format("%s %s", rd, d));
+				Date rd = longToDate(cast(long) dou);
+				assert(rd == d, format("%s %s", rd, d));
 
-			double rest = dou - cast(long)dou;
-			TimeOfDay rt = doubleToTimeOfDay(dou - cast(long)dou);
-			assert(rt == tod, format("%s %s", rt, tod));
+				double rest = dou - cast(long) dou;
+				TimeOfDay rt = doubleToTimeOfDay(dou - cast(long) dou);
+				assert(rt == tod, format("%s %s", rt, tod));
 
-			DateTime r = doubleToDateTime(dou);
-			assert(r == dt, format("%s %s", r, dt));
+				DateTime r = doubleToDateTime(dou);
+				assert(r == dt, format("%s %s", r, dt));
+			}
 		}
 	}
-}
 
 Date stringToDate(string s) @safe {
 	import std.array : split;
@@ -575,14 +627,14 @@ Date stringToDate(string s) @safe {
 	}
 }
 
-bool tryConvertTo(T,S)(S var) {
+bool tryConvertTo(T, S)(S var) {
 	return !(tryConvertToImpl!T(Data(var)).isNull());
 }
 
 Nullable!(T) tryConvertToImpl(T)(Data var) {
 	try {
 		return nullable(convertTo!T(var));
-	} catch(Exception e) {
+	} catch (Exception e) {
 		return Nullable!T();
 	}
 }
@@ -603,6 +655,7 @@ T convertTo(T)(string var) @safe {
 		} else if (var.canConvertToDouble()) {
 			return doubleToDateTime(to!double(var));
 		}
+
 		enforce(false, "Can not convert '" ~ var ~ "' to a DateTime");
 		assert(false, "Unreachable");
 	} else static if (is(T == Date)) {
@@ -611,10 +664,11 @@ T convertTo(T)(string var) @safe {
 		} else if (var.canConvertToDouble()) {
 			return longToDate(lround(to!double(var)));
 		}
+
 		return stringToDate(var);
 	} else static if (is(T == TimeOfDay)) {
 		const double l = to!double(var);
-		return doubleToTimeOfDay(l - cast(long)l);
+		return doubleToTimeOfDay(l - cast(long) l);
 	} else {
 		static assert(false, T.stringof ~ " not supported");
 	}
@@ -629,11 +683,14 @@ private static immutable workbookXMLPath = "xl/workbook.xml";
 private static immutable sharedStringXMLPath = "xl/sharedStrings.xml";
 private static immutable relsXMLPath = "xl/_rels/workbook.xml.rels";
 
-private static expandTrusted(ZipArchive za, ArchiveMember de) @trusted /* TODO: pure */ {
-    static if (tme) auto sw = StopWatch(AutoStart.yes);
+private static expandTrusted(ZipArchive za,
+                             ArchiveMember de) @trusted /* TODO: pure */ {
+	static if (tme)
+		auto sw = StopWatch(AutoStart.yes);
 	auto ret = za.expand(de);
-    static if (tme) writeln("expand length:", ret.length, " took: ", sw.peek());
-    return ret;
+	static if (tme)
+		writeln("expand length:", ret.length, " took: ", sw.peek());
+	return ret;
 }
 
 struct Relationships {
@@ -647,76 +704,84 @@ alias RelationshipsById = Relationships[string];
 struct Workbook {
 	// TODO: convert to constructor this(in string filename)?
 	static typeof(this) fromPath(in string filename) @trusted {
-        return typeof(return)(filename, new ZipArchive(read(filename)));
+		return typeof(return)(filename, new ZipArchive(read(filename)));
 	}
 
 	/* TODO: Is `fromMemory` or `fromBuffer` a better name? */
 	static typeof(this) fromMemory(void[] buffer) @trusted {
-        return typeof(return)("", new ZipArchive(buffer));
+		return typeof(return)("", new ZipArchive(buffer));
 	}
 
-    private SheetNameId[] sheetNameIds() @safe /* TODO: pure */ {
+	private SheetNameId[] sheetNameIds() @safe /* TODO: pure */ {
 		auto dom = workbookDOM();
-        if (dom.children.length != 1)
-            return [];
+		if (dom.children.length != 1)
+			return [];
 
 		auto workbook = dom.children[0];
-        if (workbook.name != "workbook" &&
-            workbook.name != "s:workbook")
-            return [];
+		if (workbook.name != "workbook" && workbook.name != "s:workbook")
+			return [];
 
 		const sheetName = workbook.name == "workbook" ? "sheets" : "s:sheets";
 		auto sheetsRng = workbook.children.filter!(c => c.name == sheetName);
-        if (sheetsRng.empty)
-            return [];
+		if (sheetsRng.empty)
+			return [];
 
-		return sheetsRng.front.children.map!(
-            // TODO: optimize by using indexOf or find
-			s => SheetNameId(s.attributes
-							  .filter!(a => a.name == "name")
-							  .front
-							  .value
-							  .decodeXML(),
-							 s.attributes
-							  .filter!(a => a.name == "sheetId")
-							  .front
-							  .value
-							  .to!int(),
-							 s.attributes
-							  .filter!(a => a.name == "r:id")
-							  .front.value)).array;
-    }
+		return sheetsRng
+			.front
+			.children
+			.map!(
+				// TODO: optimize by using indexOf or find
+				s => SheetNameId(
+					s.attributes.filter!(a => a.name == "name").front.value
+					 .decodeXML(),
+					s.attributes.filter!(a => a.name == "sheetId").front.value
+					 .to!int(),
+					s.attributes.filter!(a => a.name == "r:id").front.value
+				))
+			.array;
+	}
 
 	/// Returns: lazy range over sheets.
-    auto bySheet() @safe {
-        return sheetNameIds.map!((const scope SheetNameId sheetNameId) {
-                return extractSheet(_za, relationships, filename, sheetNameId.rid, sheetNameId.name);
-			});
-    }
+	auto bySheet() @safe {
+		return sheetNameIds.map!((const scope SheetNameId sheetNameId) {
+			return extractSheet(_za, relationships, filename, sheetNameId.rid,
+			                    sheetNameId.name);
+		});
+	}
 
 	/// Returns: eagerly evaluated array of sheets
-    auto sheets() @trusted {
+	auto sheets() @trusted {
 		return bySheet.array;
-    }
+	}
 
 	/// Get (and cache) DOM.
 	private DOMEntity!(string) workbookDOM() @safe /* TODO: pure */ {
-		import dxml.parser : Config, SkipComments, SkipPI, SplitEmpty, ThrowOnEntityRef;
+		import dxml.parser : Config, SkipComments, SkipPI, SplitEmpty,
+		                     ThrowOnEntityRef;
 		auto ent = workbookXMLPath in _za.directory;
 		// TODO: use enforce(ent ! is null); instead?
 		if (ent is null)
 			return typeof(return).init;
 		if (_wbDOM == _wbDOM.init) {
-            auto est = _za.expandTrusted(*ent).convertToString();
-            static if (tme) auto sw = StopWatch(AutoStart.yes);
-            _wbDOM = est.parseDOM!(Config(SkipComments.no, // TODO: change to SkipComments.yes and validate
-                                        SkipPI.no, // TODO: change to SkipPI.yes and validate
-                                        SplitEmpty.no, // default is ok
-                                        ThrowOnEntityRef.yes))(); // default is ok
-			enforce(_wbDOM.children.length == 1,
-					"Expected a single DOM child but got " ~ _wbDOM.children.length.to!string);
-            static if (tme) writeln("parseDOM length:", est.length, " took: ", sw.peek());
+			auto est = _za.expandTrusted(*ent).convertToString();
+			static if (tme)
+				auto sw = StopWatch(AutoStart.yes);
+			_wbDOM = est.parseDOM!(Config(
+				SkipComments
+					.no, // TODO: change to SkipComments.yes and validate
+				SkipPI.no, // TODO: change to SkipPI.yes and validate
+				SplitEmpty.no, // default is ok
+				ThrowOnEntityRef.yes
+			))(); // default is ok
+			enforce(
+				_wbDOM.children.length == 1,
+				"Expected a single DOM child but got "
+					~ _wbDOM.children.length.to!string
+			);
+			static if (tme)
+				writeln("parseDOM length:", est.length, " took: ", sw.peek());
 		}
+
 		return _wbDOM;
 	}
 
@@ -728,16 +793,21 @@ struct Workbook {
 
 	private RelationshipsById parseRelationships(ArchiveMember am) @safe {
 		auto est = _za.expandTrusted(am).convertToString();
-        // import std.digest : digest;
-        // import std.digest.md : MD5;
-        // writeln("am.name:", am.name, " md5:", est.digest!MD5);
+		// import std.digest : digest;
+		// import std.digest.md : MD5;
+		// writeln("am.name:", am.name, " md5:", est.digest!MD5);
 		auto dom = est.parseDOM();
-		enforce(dom.children.length == 1,
-				"Expected a single DOM child but got " ~ dom.children.length.to!string);
+		enforce(
+			dom.children.length == 1,
+			"Expected a single DOM child but got "
+				~ dom.children.length.to!string
+		);
 
 		auto rel = dom.children[0];
-		enforce(rel.name == "Relationships",
-				"Expected rel.name to be \"Relationships\" but was " ~ rel.name);
+		enforce(
+			rel.name == "Relationships",
+			"Expected rel.name to be \"Relationships\" but was " ~ rel.name
+		);
 
 		typeof(return) ret;
 		static if (is(typeof(ret.reserve(size_t.init)) == void)) {
@@ -745,12 +815,15 @@ struct Workbook {
 			 * map. */
 			ret.reserve(rel.children.length);
 		}
+
 		foreach (ref r; rel.children.filter!(c => c.name == "Relationship")) {
 			Relationships tmp;
 			tmp.id = r.attributes.filter!(a => a.name == "Id").front.value;
-			tmp.file = r.attributes.filter!(a => a.name == "Target").front.value;
+			tmp.file =
+				r.attributes.filter!(a => a.name == "Target").front.value;
 			ret[tmp.id] = tmp;
 		}
+
 		enforce(!ret.empty);
 		return ret;
 	}
@@ -764,34 +837,39 @@ struct Workbook {
 
 	const string filename;
 	private ZipArchive _za;
-	private DOMEntity!string _wbDOM;	///< Workbook.
+	private DOMEntity!string _wbDOM; ///< Workbook.
 	private RelationshipsById _rels;
 	private string[] _sharedEntries;
 }
 
 /// benchmark reading of "50xP_sheet1.xlsx"
-version(mir_benchmark) @safe unittest {
-	enum path = "50xP_sheet1.xlsx";
-	import std.meta : AliasSeq;
-	static void use_sheetNamesAndreadSheet() @trusted {
-		foreach (const i, const ref s; sheetNames(path)) {
-			auto sheet = readSheet(path, s.name);
+version(mir_benchmark)
+	@safe
+	unittest {
+		enum path = "50xP_sheet1.xlsx";
+		import std.meta : AliasSeq;
+		static void use_sheetNamesAndreadSheet() @trusted {
+			foreach (const i, const ref s; sheetNames(path)) {
+				auto sheet = readSheet(path, s.name);
+			}
+		}
+
+		static void use_bySheet() @trusted {
+			auto file = Workbook.fromPath(path);
+			size_t i = 0;
+			foreach (ref sheet; file.bySheet) {
+				i++;
+			}
+		}
+
+		alias funs = AliasSeq!(/* use_sheetNamesAndreadSheet, */
+			use_bySheet);
+		auto results = benchmarkMin!(funs)(runCount);
+		foreach (const i, fun; funs) {
+			writeln(fun.stringof[0 .. $ - 2], "(\"", path, "\") took ",
+			        results[i]);
 		}
 	}
-    static void use_bySheet() @trusted {
-        auto file = Workbook.fromPath(path);
-		size_t i = 0;
-        foreach (ref sheet; file.bySheet) {
-			i++;
-        }
-    }
-	alias funs = AliasSeq!(/* use_sheetNamesAndreadSheet, */
-						   use_bySheet);
-	auto results = benchmarkMin!(funs)(runCount);
-	foreach (const i, fun; funs) {
-		writeln(fun.stringof[0 .. $-2], "(\"", path, "\") took ", results[i]);
-	}
-}
 
 /// Sheet name, id and rid.
 struct SheetNameId {
@@ -805,19 +883,19 @@ string convertToString(inout(ubyte)[] d) @trusted {
 	import std.encoding : getBOM, BOM, transcode;
 	const b = getBOM(d);
 	switch (b.schema) {
-	case BOM.none:
-		return cast(string)d;	// TODO: remove this cast
-	case BOM.utf8:
-		return cast(string)(d[3 .. $]); // TODO: remove this cast
-	case BOM.utf16be:
-	case BOM.utf16le:
-	case BOM.utf32be:
-	case BOM.utf32le:
-		goto default;
-	default:
-		string ret;
-		transcode(d, ret);
-		return ret;
+		case BOM.none:
+			return cast(string) d; // TODO: remove this cast
+		case BOM.utf8:
+			return cast(string) (d[3 .. $]); // TODO: remove this cast
+		case BOM.utf16be:
+		case BOM.utf16le:
+		case BOM.utf32be:
+		case BOM.utf32le:
+			goto default;
+		default:
+			string ret;
+			transcode(d, ret);
+			return ret;
 	}
 }
 
@@ -826,29 +904,33 @@ SheetNameId[] sheetNames(in string filename) @trusted {
 	return Workbook.fromPath(filename).sheetNameIds();
 }
 
-version(mir_test) @safe unittest {
-	auto r = sheetNames("multitable.xlsx");
-	assert(r == [SheetNameId("wb1", 1, "rId2"),
-				 SheetNameId("wb2", 2, "rId3"),
-				 SheetNameId("Sheet3", 3, "rId4")]);
-}
+version(mir_test)
+	@safe
+	unittest {
+		auto r = sheetNames("multitable.xlsx");
+		assert(r
+			== [SheetNameId("wb1", 1, "rId2"), SheetNameId("wb2", 2, "rId3"),
+			    SheetNameId("Sheet3", 3, "rId4")]);
+	}
 
-version(mir_test) @safe unittest {
-	auto r = sheetNames("sheetnames.xlsx");
-	assert(r == [SheetNameId("A & B ;", 1, "rId2")]);
-}
+version(mir_test)
+	@safe
+	unittest {
+		auto r = sheetNames("sheetnames.xlsx");
+		assert(r == [SheetNameId("A & B ;", 1, "rId2")]);
+	}
 
 deprecated("use File.relationships(ArchiveMember am) instead")
 RelationshipsById parseRelationships(ZipArchive za, ArchiveMember am) @safe {
-	auto dom = za.expandTrusted(am)
-				 .convertToString()
-				 .parseDOM();
-	enforce(dom.children.length == 1,
-			"Expected a single DOM child but got " ~ dom.children.length.to!string);
+	auto dom = za.expandTrusted(am).convertToString().parseDOM();
+	enforce(
+		dom.children.length == 1,
+		"Expected a single DOM child but got " ~ dom.children.length.to!string
+	);
 
 	auto rel = dom.children[0];
 	enforce(rel.name == "Relationships",
-			"Expected rel.name to be \"Relationships\" but was " ~ rel.name);
+	        "Expected rel.name to be \"Relationships\" but was " ~ rel.name);
 
 	typeof(return) ret;
 	static if (is(typeof(ret.reserve(size_t.init)) == void)) {
@@ -856,12 +938,14 @@ RelationshipsById parseRelationships(ZipArchive za, ArchiveMember am) @safe {
 		 * map. */
 		ret.reserve(rel.children.length);
 	}
+
 	foreach (ref r; rel.children.filter!(c => c.name == "Relationship")) {
 		Relationships tmp;
 		tmp.id = r.attributes.filter!(a => a.name == "Id").front.value;
 		tmp.file = r.attributes.filter!(a => a.name == "Target").front.value;
 		ret[tmp.id] = tmp;
 	}
+
 	enforce(!ret.empty);
 	return ret;
 }
@@ -870,47 +954,53 @@ RelationshipsById parseRelationships(ZipArchive za, ArchiveMember am) @safe {
 Sheet readSheet(in string filename, in string sheetName) @safe {
 	const SheetNameId[] sheets = sheetNames(filename);
 	auto sRng = sheets.filter!(s => s.name == sheetName);
-	enforce(!sRng.empty, "No sheet with name " ~ sheetName
-			~ " found in file " ~ filename);
+	enforce(!sRng.empty,
+	        "No sheet with name " ~ sheetName ~ " found in file " ~ filename);
 	return readSheetImpl(filename, sRng.front.rid, sheetName);
 }
 
 string eatXlPrefix(scope return string fn) @safe pure nothrow @nogc {
-    static immutable xlPrefixes = ["xl//", "/xl/"];
+	static immutable xlPrefixes = ["xl//", "/xl/"];
 	foreach (const p; xlPrefixes) {
 		// TODO: use fn.skipOver("xl//", "/xl/") when it’s nothrow @nogc
 		if (fn.startsWith(p)) {
 			return fn[p.length .. $];
 		}
 	}
+
 	return fn;
 }
 
-Sheet readSheetImpl(in string filename,
-                    in string rid, in string sheetName) @safe {
+Sheet readSheetImpl(in string filename, in string rid,
+                    in string sheetName) @safe {
 	scope(failure)
 		writefln("Failed at file '%s' and sheet '%s'", filename, rid);
 	auto za = readFile(filename);
 	auto rels = parseRelationships(za, za.directory[relsXMLPath]);
-    return extractSheet(za, rels, filename, rid, sheetName);
+	return extractSheet(za, rels, filename, rid, sheetName);
 }
 
-private Sheet extractSheet(ZipArchive za,
-						   in RelationshipsById rels,
-						   in string filename,
-                           in string rid, in string sheetName) @trusted {
+private
+Sheet extractSheet(ZipArchive za, in RelationshipsById rels, in string filename,
+                   in string rid, in string sheetName) @trusted {
 	string[] ss;
 	if (ArchiveMember* amPtr = sharedStringXMLPath in za.directory)
-		ss = readSharedEntries(za, *amPtr);                         // TODO: cache this into File.sharedStrings
+		ss = readSharedEntries(
+			za, *amPtr); // TODO: cache this into File.sharedStrings
 
-	const Relationships* sheetRel = rid in rels; // TODO: move this calculation to caller and pass Relationships as rels
-	enforce(sheetRel !is null, format("Could not find '%s' in '%s'", rid, filename));
+	const Relationships* sheetRel = rid
+		in rels; // TODO: move this calculation to caller and pass Relationships as rels
+	enforce(sheetRel !is null,
+	        format("Could not find '%s' in '%s'", rid, filename));
 	const fn = "xl/" ~ eatXlPrefix(sheetRel.file);
 	ArchiveMember* sheet = fn in za.directory;
-	enforce(sheet !is null, format("sheetRel.file orig '%s', fn %s not in [%s]",
-				sheetRel.file, fn, za.directory.keys()));
+	enforce(
+		sheet !is null,
+		format("sheetRel.file orig '%s', fn %s not in [%s]", sheetRel.file, fn,
+		       za.directory.keys())
+	);
 
-    Cell[] cells1 = readCells(za, *sheet); // hot spot!
+	Cell[] cells1 = readCells(za, *sheet); // hot spot!
 	Cell[] cells = insertValueIntoCell(cells1, ss);
 
 	Pos maxPos;
@@ -919,8 +1009,8 @@ private Sheet extractSheet(ZipArchive za,
 		maxPos = elementMax(maxPos, c.position);
 	}
 
-    // TODO: 1. contruct this lazily in Sheet upon use and cache
-    // TODO: 2. deprecate it
+	// TODO: 1. contruct this lazily in Sheet upon use and cache
+	// TODO: 2. deprecate it
 	auto table = new Cell[][](maxPos.row + 1, maxPos.col + 1);
 	foreach (const ref c; cells) {
 		table[c.position.row][c.position.col] = c;
@@ -941,7 +1031,7 @@ string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
 	if (sst.type != EntityType.elementStart || sst.children.empty)
 		return typeof(return).init;
 
-	Appender!(typeof(return)) ret;	// TODO: reserve?
+	Appender!(typeof(return)) ret; // TODO: reserve?
 	foreach (ref si; sst.children.filter!(c => c.name == "si")) {
 		if (si.type != EntityType.elementStart)
 			continue;
@@ -949,13 +1039,13 @@ string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
 		string tmp;
 		foreach (ref tORr; si.children) {
 			if (tORr.name == "t" && tORr.type == EntityType.elementStart
-					&& !tORr.children.empty)
-			{
+				    && !tORr.children.empty) {
 				//ret ~= Data(convert(tORr.children[0].text));
 				ret ~= tORr.children[0].text.decodeXML;
 			} else if (tORr.name == "r") {
 				foreach (ref r; tORr.children.filter!(r => r.name == "t")) {
-					if (r.type == EntityType.elementStart && !r.children.empty) {
+					if (r.type == EntityType.elementStart
+						    && !r.children.empty) {
 						tmp ~= r.children[0].text.decodeXML;
 					}
 				}
@@ -964,11 +1054,13 @@ string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
 				ret ~= "";
 			}
 		}
+
 		if (!tmp.empty) {
 			//ret ~= Data(convert(tmp));
 			ret ~= tmp.decodeXML;
 		}
 	}
+
 	return ret.data;
 }
 
@@ -979,8 +1071,7 @@ string extractData(DOMEntity!string si) {
 			if (!tORr.attributes.filter!(a => a.name == "xml:space").empty) {
 				return "";
 			} else if (tORr.type == EntityType.elementStart
-					&& !tORr.children.empty)
-			{
+				           && !tORr.children.empty) {
 				return tORr.children[0].text;
 			} else {
 				return "";
@@ -991,9 +1082,11 @@ string extractData(DOMEntity!string si) {
 			}
 		}
 	}
+
 	if (!tmp.empty) {
 		return tmp;
 	}
+
 	assert(false);
 }
 
@@ -1006,21 +1099,21 @@ private bool canConvertToLong(in string s) @safe pure nothrow @nogc {
 }
 
 version(ctRegex_test)
-version(unittest)
-{
-	import std.regex : ctRegex, matchAll;
-	private static immutable rs = r"[\+-]{0,1}[0-9][0-9]*\.[0-9]*";
-	private static immutable rgx = ctRegex!rs;
-	private bool canConvertToDoubleOld(in string s) @safe {
-		auto cap = matchAll(s, rgx);
-		return cap.empty || cap.front.hit != s ? false : true;
+	version(unittest) {
+		import std.regex : ctRegex, matchAll;
+		private static immutable rs = r"[\+-]{0,1}[0-9][0-9]*\.[0-9]*";
+		private static immutable rgx = ctRegex!rs;
+		private bool canConvertToDoubleOld(in string s) @safe {
+			auto cap = matchAll(s, rgx);
+			return cap.empty || cap.front.hit != s ? false : true;
+		}
 	}
-}
 
 private bool canConvertToDouble(string s) pure @safe nothrow @nogc {
 	if (s.startsWith('+', '-')) {
 		s = s[1 .. $];
 	}
+
 	if (s.empty) {
 		return false;
 	}
@@ -1038,12 +1131,15 @@ private bool canConvertToDouble(string s) pure @safe nothrow @nogc {
 	while (!s.empty && s[0] >= '0' && s[0] <= '9') {
 		s = s[1 .. $];
 	}
+
 	if (s.empty) {
 		return true;
 	}
+
 	if (s[0] != '.') {
 		return false;
 	}
+
 	s = s[1 .. $];
 	if (s.empty) {
 		return true;
@@ -1056,33 +1152,34 @@ private bool canConvertToDouble(string s) pure @safe nothrow @nogc {
 	return s.empty;
 }
 
-version(mir_test) @safe unittest {
-	static struct Test {
-		string tt;
-		bool rslt;
-	}
-	auto tests =
-		[ Test("-", false)
-		, Test("0.0", true)
-		, Test("-0.", true)
-		, Test("-0.0", true)
-		, Test("-0.a", false)
-		, Test("-0.0", true)
-		, Test("-1100.0", true)
+version(mir_test)
+	@safe
+	unittest {
+		static struct Test {
+			string tt;
+			bool rslt;
+		}
+
+		auto tests = [
+			Test("-", false),
+			Test("0.0", true),
+			Test("-0.", true),
+			Test("-0.0", true),
+			Test("-0.a", false),
+			Test("-0.0", true),
+			Test("-1100.0", true)
 		];
-	foreach (const t; tests) {
-        version(ctRegex_test)
-            assert(canConvertToDouble(t.tt) == canConvertToDoubleOld(t.tt) ,
-                   format("%s %s %s %s", t.tt,
-                          canConvertToDouble(t.tt),
-                          canConvertToDoubleOld(t.tt),
-                          t.rslt));
-		assert(canConvertToDouble(t.tt) == t.rslt,
-               format("%s %s %s", t.tt,
-                      canConvertToDouble(t.tt),
-                      t.rslt));
+		foreach (const t; tests) {
+			version(ctRegex_test)
+				assert(
+					canConvertToDouble(t.tt) == canConvertToDoubleOld(t.tt),
+					format("%s %s %s %s", t.tt, canConvertToDouble(t.tt),
+					       canConvertToDoubleOld(t.tt), t.rslt)
+				);
+			assert(canConvertToDouble(t.tt) == t.rslt,
+			       format("%s %s %s", t.tt, canConvertToDouble(t.tt), t.rslt));
+		}
 	}
-}
 
 deprecated("use dxml.util.decodeXML instead")
 string removeSpecialCharacter(string s) {
@@ -1091,13 +1188,9 @@ string removeSpecialCharacter(string s) {
 		string to;
 	}
 
-	immutable ToRe[] toRe = [
-		ToRe( "&amp;", "&"),
-		ToRe( "&gt;", "<"),
-		ToRe( "&lt;", ">"),
-		ToRe( "&quot;", "\""),
-		ToRe( "&apos;", "'")
-	];
+	immutable ToRe[] toRe =
+		[ToRe("&amp;", "&"), ToRe("&gt;", "<"), ToRe("&lt;", ">"),
+		 ToRe("&quot;", "\""), ToRe("&apos;", "'")];
 
 	string replaceStrings(string s) {
 		import std.algorithm.searching : canFind;
@@ -1108,6 +1201,7 @@ string removeSpecialCharacter(string s) {
 				s = s.replace(tr.from, tr.to);
 			}
 		}
+
 		return s;
 	}
 
@@ -1115,7 +1209,8 @@ string removeSpecialCharacter(string s) {
 }
 
 Cell[] readCells(ZipArchive za, ArchiveMember am) /* TODO: @safe */ {
-	auto dom = za.expandTrusted(am).convertToString().parseDOM(); // TODO: cache?
+	auto dom =
+		za.expandTrusted(am).convertToString().parseDOM(); // TODO: cache?
 	assert(dom.children.length == 1);
 
 	auto ws = dom.children[0];
@@ -1135,12 +1230,12 @@ Cell[] readCells(ZipArchive za, ArchiveMember am) /* TODO: @safe */ {
 		if (row.type != EntityType.elementStart || row.children.empty) {
 			continue;
 		}
+
 		foreach (ref c; row.children.filter!(r => r.name == "c")) {
 			Cell tmp;
-			tmp.row = row.attributes.filter!(a => a.name == "r")
-				.front.value.to!RowOffset();
-			tmp.r = c.attributes.filter!(a => a.name == "r")
-				.front.value;
+			tmp.row = row.attributes.filter!(a => a.name == "r").front.value
+			             .to!RowOffset();
+			tmp.r = c.attributes.filter!(a => a.name == "r").front.value;
 			auto t = c.attributes.filter!(a => a.name == "t");
 			if (t.empty) {
 				// we assume that no t attribute means direct number
@@ -1148,13 +1243,13 @@ Cell[] readCells(ZipArchive za, ArchiveMember am) /* TODO: @safe */ {
 			} else {
 				tmp.t = t.front.value;
 			}
+
 			if (tmp.t == "s" || tmp.t == "n") {
 				if (c.type == EntityType.elementStart) {
 					auto v = c.children.filter!(c => c.name == "v");
 					//enforce(!v.empty, format("r %s", tmp.row));
 					if (!v.empty && v.front.type == EntityType.elementStart
-							&& !v.front.children.empty)
-					{
+						    && !v.front.children.empty) {
 						tmp.v = v.front.children[0].text;
 					} else {
 						tmp.v = "";
@@ -1166,29 +1261,32 @@ Cell[] readCells(ZipArchive za, ArchiveMember am) /* TODO: @safe */ {
 			} else if (c.type == EntityType.elementStart) {
 				auto v = c.children.filter!(c => c.name == "v");
 				if (!v.empty && v.front.type == EntityType.elementStart
-						&& !v.front.children.empty)
-				{
+					    && !v.front.children.empty) {
 					tmp.v = v.front.children[0].text;
 				}
 			}
+
 			if (c.type == EntityType.elementStart) {
 				auto f = c.children.filter!(c => c.name == "f");
 				if (!f.empty && f.front.type == EntityType.elementStart) {
 					tmp.f = f.front.children[0].text;
 				}
 			}
+
 			ret ~= tmp;
 		}
 	}
-	return ret.data;			// TODO: assumeUnique?
+
+	return ret.data; // TODO: assumeUnique?
 }
 
 Cell[] insertValueIntoCell(Cell[] cells, string[] ss) @trusted pure {
-	immutable excepted = ["n", "s", "b", "e", "str", "inlineStr"]; // TODO: what are these?
-	immutable same = ["n", "e", "str", "inlineStr"];			   // TODO: what are these?
+	immutable excepted =
+		["n", "s", "b", "e", "str", "inlineStr"]; // TODO: what are these?
+	immutable same = ["n", "e", "str", "inlineStr"]; // TODO: what are these?
 	foreach (ref Cell c; cells) {
 		assert(excepted.canFind(c.t) || c.t.empty,
-			   format("'%s' not in [%s]", c.t, excepted));
+		       format("'%s' not in [%s]", c.t, excepted));
 		if (c.t.empty) {
 			c.xmlValue = c.v.decodeXML;
 		} else if (same.canFind(c.t)) {
@@ -1199,6 +1297,7 @@ Cell[] insertValueIntoCell(Cell[] cells, string[] ss) @trusted pure {
 			c.xmlValue = ss[c.v.to!size_t];
 		}
 	}
+
 	return cells;
 }
 
@@ -1213,219 +1312,243 @@ Pos toPos(in string s) @safe pure {
 	foreach (const idx, char c; colS) {
 		col = col * 26 + (c - 'A' + 1);
 	}
+
 	return Pos(row, col - 1);
 }
 
-version(mir_test) @safe pure unittest {
-	assert(toPos("A1").col == 0);
-	assert(toPos("Z1").col == 25);
-	assert(toPos("AA1").col == 26);
-}
+version(mir_test)
+	@safe
+	pure unittest {
+		assert(toPos("A1").col == 0);
+		assert(toPos("Z1").col == 25);
+		assert(toPos("AA1").col == 26);
+	}
 
 Pos elementMax(Pos a, Pos b) @safe pure nothrow @nogc {
-    import std.algorithm.comparison : max;
-	return Pos(max(a.row, b.row),
-               max(a.col, b.col));
+	import std.algorithm.comparison : max;
+	return Pos(max(a.row, b.row), max(a.col, b.col));
 }
 
 deprecated("this function is unused and will therefore be removed")
 string specialCharacterReplacement(string s) @safe pure nothrow {
 	import std.algorithm.iteration : substitute;
-    import std.array : replace;
+	import std.array : replace;
 	// TODO: use substitute.array
-	return s.replace("\"", "&quot;")
-			.replace("'", "&apos;")
-			.replace("<", "&lt;")
-			.replace(">", "&gt;")
-			.replace("&", "&amp;");
+	return s.replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;")
+	        .replace(">", "&gt;").replace("&", "&amp;");
 }
 
-version(mir_test) @safe pure nothrow unittest {
-	assert("&".specialCharacterReplacement == "&amp;");
-}
+version(mir_test)
+	@safe
+	pure nothrow unittest {
+		assert("&".specialCharacterReplacement == "&amp;");
+	}
 
 deprecated("use dxml.util.decodeXML instead")
 string specialCharacterReplacementReverse(string s) @safe pure nothrow {
-    import std.array : replace;
-    // TODO: reuse existing Phobos function or generalize to all special characters
-	return s.replace("&quot;", "\"")
-			.replace("&apos;", "'")
-			.replace("&lt;", "<")
-			.replace("&gt;", ">")
-			.replace("&amp;", "&");
+	import std.array : replace;
+	// TODO: reuse existing Phobos function or generalize to all special characters
+	return s.replace("&quot;", "\"").replace("&apos;", "'").replace("&lt;", "<")
+	        .replace("&gt;", ">").replace("&amp;", "&");
 }
 
 version(none) // disabled because specialCharacterReplacementReverse is deprecated
-version(mir_test) @safe pure nothrow unittest {
-	assert("&quot;".specialCharacterReplacementReverse == "\"");
-	assert("&apos;".specialCharacterReplacementReverse == "'");
-	assert("&lt;".specialCharacterReplacementReverse == "<");
-	assert("&gt;".specialCharacterReplacementReverse == ">");
-	assert("&amp;".specialCharacterReplacementReverse == "&");
-}
+	version(mir_test)
+		@safe
+		pure nothrow unittest {
+			assert("&quot;".specialCharacterReplacementReverse == "\"");
+			assert("&apos;".specialCharacterReplacementReverse == "'");
+			assert("&lt;".specialCharacterReplacementReverse == "<");
+			assert("&gt;".specialCharacterReplacementReverse == ">");
+			assert("&amp;".specialCharacterReplacementReverse == "&");
+		}
 
-version(mir_test) @safe unittest {
-	import std.math : isClose;
-	auto r = readSheet("multitable.xlsx", "wb1");
-	assert(isClose(r.table[12][5].xmlValue.to!double(), 26.74),
-			format("%s", r.table[12][5])
-		);
+version(mir_test)
+	@safe
+	unittest {
+		import std.math : isClose;
+		auto r = readSheet("multitable.xlsx", "wb1");
+		assert(isClose(r.table[12][5].xmlValue.to!double(), 26.74),
+		       format("%s", r.table[12][5]));
 
-	assert(isClose(r.table[13][5].xmlValue.to!double(), -26.74),
-			format("%s", r.table[13][5])
-		);
-}
+		assert(isClose(r.table[13][5].xmlValue.to!double(), -26.74),
+		       format("%s", r.table[13][5]));
+	}
 
-version(mir_test) @safe unittest {
-	auto s = readSheet("multitable.xlsx", "wb1");
-	const expectedCells = [const(Cell)("", 3, "s", "D3", "0", "", "a", const(Pos)(2, 3)),
-						   const(Cell)("", 3, "s", "E3", "1", "", "b", const(Pos)(2, 4)),
-						   const(Cell)("", 4, "s", "D4", "2", "", "1", const(Pos)(3, 3)),
-						   const(Cell)("", 4, "s", "E4", "3", "", "\"one\"", const(Pos)(3, 4)),
-						   const(Cell)("", 5, "s", "D5", "4", "", "2", const(Pos)(4, 3)),
-						   const(Cell)("", 5, "s", "E5", "5", "", "\"two\"", const(Pos)(4, 4)),
-						   const(Cell)("", 6, "s", "D6", "6", "", "3", const(Pos)(5, 3)),
-						   const(Cell)("", 6, "s", "E6", "7", "", "\"three\"", const(Pos)(5, 4)),
-						   const(Cell)("", 7, "", "B7", "", "", "", const(Pos)(6, 1)),
-						   const(Cell)("", 7, "s", "F7", "1", "", "b", const(Pos)(6, 5)),
-						   const(Cell)("", 7, "s", "G7", "0", "", "a", const(Pos)(6, 6)),
-						   const(Cell)("", 8, "n", "C8", "0.504409722222222", "", "0.504409722222222", const(Pos)(7, 2)),
-						   const(Cell)("", 8, "s", "F8", "3", "", "\"one\"", const(Pos)(7, 5)),
-						   const(Cell)("", 8, "s", "G8", "2", "", "1", const(Pos)(7, 6)),
-						   const(Cell)("", 9, "s", "F9", "5", "", "\"two\"", const(Pos)(8, 5)),
-						   const(Cell)("", 9, "s", "G9", "4", "", "2", const(Pos)(8, 6)),
-						   const(Cell)("", 10, "s", "F10", "7", "", "\"three\"", const(Pos)(9, 5)),
-						   const(Cell)("", 10, "s", "G10", "6", "", "3", const(Pos)(9, 6)),
-						   const(Cell)("", 11, "s", "AC11", "8", "", "Foo", const(Pos)(10, 28)),
-						   const(Cell)("", 12, "s", "B12", "9", "", "Hello World", const(Pos)(11, 1)),
-						   const(Cell)("", 13, "n", "E13", "13.37", "", "13.37", const(Pos)(12, 4)),
-						   const(Cell)("", 13, "n", "F13", "26.74", "E13*2", "26.74", const(Pos)(12, 5)),
-						   const(Cell)("", 14, "n", "F14", "-26.74", "-E13*2", "-26.74", const(Pos)(13, 5)),
-						   const(Cell)("", 16, "n", "B16", "1", "", "1", const(Pos)(15, 1)),
-						   const(Cell)("", 16, "n", "C16", "2", "", "2", const(Pos)(15, 2)),
-						   const(Cell)("", 16, "n", "D16", "3", "", "3", const(Pos)(15, 3)),
-						   const(Cell)("", 16, "n", "E16", "4", "", "4", const(Pos)(15, 4)),
-						   const(Cell)("", 16, "n", "F16", "5", "", "5", const(Pos)(15, 5))];
-	assert(s.cells == expectedCells);
-	assert(s.table.length == 16);
-	foreach (const Cell[] row; s.table)
-		assert(row.length == 29);
-}
+version(mir_test)
+	@safe
+	unittest {
+		auto s = readSheet("multitable.xlsx", "wb1");
+		const expectedCells = [
+			const(Cell)("", 3, "s", "D3", "0", "", "a", const(Pos)(2, 3)),
+			const(Cell)("", 3, "s", "E3", "1", "", "b", const(Pos)(2, 4)),
+			const(Cell)("", 4, "s", "D4", "2", "", "1", const(Pos)(3, 3)),
+			const(Cell)("", 4, "s", "E4", "3", "", "\"one\"", const(Pos)(3, 4)),
+			const(Cell)("", 5, "s", "D5", "4", "", "2", const(Pos)(4, 3)),
+			const(Cell)("", 5, "s", "E5", "5", "", "\"two\"", const(Pos)(4, 4)),
+			const(Cell)("", 6, "s", "D6", "6", "", "3", const(Pos)(5, 3)),
+			const(Cell)("", 6, "s", "E6", "7", "", "\"three\"",
+			            const(Pos)(5, 4)),
+			const(Cell)("", 7, "", "B7", "", "", "", const(Pos)(6, 1)),
+			const(Cell)("", 7, "s", "F7", "1", "", "b", const(Pos)(6, 5)),
+			const(Cell)("", 7, "s", "G7", "0", "", "a", const(Pos)(6, 6)),
+			const(Cell)("", 8, "n", "C8", "0.504409722222222", "",
+			            "0.504409722222222", const(Pos)(7, 2)),
+			const(Cell)("", 8, "s", "F8", "3", "", "\"one\"", const(Pos)(7, 5)),
+			const(Cell)("", 8, "s", "G8", "2", "", "1", const(Pos)(7, 6)),
+			const(Cell)("", 9, "s", "F9", "5", "", "\"two\"", const(Pos)(8, 5)),
+			const(Cell)("", 9, "s", "G9", "4", "", "2", const(Pos)(8, 6)),
+			const(Cell)("", 10, "s", "F10", "7", "", "\"three\"",
+			            const(Pos)(9, 5)),
+			const(Cell)("", 10, "s", "G10", "6", "", "3", const(Pos)(9, 6)),
+			const(Cell)("", 11, "s", "AC11", "8", "", "Foo",
+			            const(Pos)(10, 28)),
+			const(Cell)("", 12, "s", "B12", "9", "", "Hello World",
+			            const(Pos)(11, 1)),
+			const(Cell)("", 13, "n", "E13", "13.37", "", "13.37",
+			            const(Pos)(12, 4)),
+			const(Cell)("", 13, "n", "F13", "26.74", "E13*2", "26.74",
+			            const(Pos)(12, 5)),
+			const(Cell)("", 14, "n", "F14", "-26.74", "-E13*2", "-26.74",
+			            const(Pos)(13, 5)),
+			const(Cell)("", 16, "n", "B16", "1", "", "1", const(Pos)(15, 1)),
+			const(Cell)("", 16, "n", "C16", "2", "", "2", const(Pos)(15, 2)),
+			const(Cell)("", 16, "n", "D16", "3", "", "3", const(Pos)(15, 3)),
+			const(Cell)("", 16, "n", "E16", "4", "", "4", const(Pos)(15, 4)),
+			const(Cell)("", 16, "n", "F16", "5", "", "5", const(Pos)(15, 5))
+		];
+		assert(s.cells == expectedCells);
+		assert(s.table.length == 16);
+		foreach (const Cell[] row; s.table)
+			assert(row.length == 29);
+	}
 
-version(mir_test) @safe unittest {
-	auto s = readSheet("multitable.xlsx", "wb1");
+version(mir_test)
+	@safe
+	unittest {
+		auto s = readSheet("multitable.xlsx", "wb1");
 
-	auto r = s.iterateRow!long(15, 1, 6);
+		auto r = s.iterateRow!long(15, 1, 6);
 
-	auto expected = [1, 2, 3, 4, 5];
-	assert(equal(r, expected), format("%s", r));
+		auto expected = [1, 2, 3, 4, 5];
+		assert(equal(r, expected), format("%s", r));
 
-	auto r2 = s.getRow!long(15, 1, 6);
-	assert(equal(r, expected));
+		auto r2 = s.getRow!long(15, 1, 6);
+		assert(equal(r, expected));
 
-	auto it = s.iterateRowLong(15, 1, 6);
-	assert(equal(r2, it));
+		auto it = s.iterateRowLong(15, 1, 6);
+		assert(equal(r2, it));
 
-	auto it2 = s.iterateRowUntyped(15, 1, 6)
-		.map!(it => format("%s", it))
-		.array;
-}
+		auto it2 =
+			s.iterateRowUntyped(15, 1, 6).map!(it => format("%s", it)).array;
+	}
 
-version(mir_test) @safe unittest {
-	auto s = readSheet("multitable.xlsx", "wb2");
-	//writefln("%s\n%(%s\n%)", s.maxPos, s.cells);
-	auto rslt = s.iterateColumn!Date(1, 1, 6);
-	auto rsltUt = s.iterateColumnUntyped(1, 1, 6)
-		.map!(it => format("%s", it))
-		.array;
-	assert(!rsltUt.empty);
+version(mir_test)
+	@safe
+	unittest {
+		auto s = readSheet("multitable.xlsx", "wb2");
+		//writefln("%s\n%(%s\n%)", s.maxPos, s.cells);
+		auto rslt = s.iterateColumn!Date(1, 1, 6);
+		auto rsltUt =
+			s.iterateColumnUntyped(1, 1, 6).map!(it => format("%s", it)).array;
+		assert(!rsltUt.empty);
 
-	auto target = [Date(2019,5,01), Date(2016,12,27), Date(1976,7,23),
-		 Date(1986,7,2), Date(2038,1,19)
-	];
-	assert(equal(rslt, target), format("\n%s\n%s", rslt, target));
+		auto target = [Date(2019, 5, 01), Date(2016, 12, 27), Date(1976, 7, 23),
+		               Date(1986, 7, 2), Date(2038, 1, 19)];
+		assert(equal(rslt, target), format("\n%s\n%s", rslt, target));
 
-	auto it = s.getColumn!Date(1, 1, 6);
-	assert(equal(rslt, it));
+		auto it = s.getColumn!Date(1, 1, 6);
+		assert(equal(rslt, it));
 
-	auto it2 = s.getColumnDate(1, 1, 6);
-	assert(equal(rslt, it2));
-}
+		auto it2 = s.getColumnDate(1, 1, 6);
+		assert(equal(rslt, it2));
+	}
 
-version(mir_test) @safe unittest {
-	auto s = readSheet("multitable.xlsx", "Sheet3");
-	// writeln(s.table[0][0].xmlValue);
-	assert(s.table[0][0].xmlValue.to!long(),
-			format("%s", s.table[0][0].xmlValue));
-}
+version(mir_test)
+	@safe
+	unittest {
+		auto s = readSheet("multitable.xlsx", "Sheet3");
+		// writeln(s.table[0][0].xmlValue);
+		assert(s.table[0][0].xmlValue.to!long(),
+		       format("%s", s.table[0][0].xmlValue));
+	}
 
-version(mir_test) unittest {
-	import std.file : dirEntries, SpanMode;
-	import std.traits : EnumMembers;
-	foreach (const de; dirEntries("xlsx_files/", "*.xlsx", SpanMode.depth)
-			.filter!(a => a.name != "xlsx_files/data03.xlsx"))
-	{
-		auto sn = sheetNames(de.name);
-		foreach (const ref s; sn) {
-			auto sheet = readSheet(de.name, s.name);
-			foreach (const ref cell; sheet.cells) {
+version(mir_test)
+	unittest {
+		import std.file : dirEntries, SpanMode;
+		import std.traits : EnumMembers;
+		foreach (const de;
+			dirEntries("xlsx_files/", "*.xlsx", SpanMode.depth)
+				.filter!(a => a.name != "xlsx_files/data03.xlsx")) {
+			auto sn = sheetNames(de.name);
+			foreach (const ref s; sn) {
+				auto sheet = readSheet(de.name, s.name);
+				foreach (const ref cell; sheet.cells) {}
 			}
 		}
 	}
-}
 
-version(mir_test) @safe unittest {
-	auto sheet = readSheet("testworkbook.xlsx", "ws1");
-	//writefln("%(%s\n%)", sheet.cells);
-	//writeln(sheet.toString());
-	assert(sheet.table[2][3].xmlValue.to!long() == 1337);
+version(mir_test)
+	@safe
+	unittest {
+		auto sheet = readSheet("testworkbook.xlsx", "ws1");
+		//writefln("%(%s\n%)", sheet.cells);
+		//writeln(sheet.toString());
+		assert(sheet.table[2][3].xmlValue.to!long() == 1337);
 
-	auto c = sheet.getColumnLong(3, 2, 5);
-	auto r = [1337, 2, 3];
-	assert(equal(c, r), format("%s %s", c, sheet.toString()));
+		auto c = sheet.getColumnLong(3, 2, 5);
+		auto r = [1337, 2, 3];
+		assert(equal(c, r), format("%s %s", c, sheet.toString()));
 
-	auto c2 = sheet.getColumnString(4, 2, 5);
-	string f2 = sheet.table[2][4].xmlValue;
-	assert(f2 == "hello", f2);
-	f2 = sheet.table[3][4].xmlValue;
-	assert(f2 == "sil", f2);
-	f2 = sheet.table[4][4].xmlValue;
-	assert(f2 == "foo", f2);
-	auto r2 = ["hello", "sil", "foo"];
-	assert(equal(c2, r2), format("%s", c2));
-}
+		auto c2 = sheet.getColumnString(4, 2, 5);
+		string f2 = sheet.table[2][4].xmlValue;
+		assert(f2 == "hello", f2);
+		f2 = sheet.table[3][4].xmlValue;
+		assert(f2 == "sil", f2);
+		f2 = sheet.table[4][4].xmlValue;
+		assert(f2 == "foo", f2);
+		auto r2 = ["hello", "sil", "foo"];
+		assert(equal(c2, r2), format("%s", c2));
+	}
 
-version(mir_test) @safe unittest {
-	import std.math : isClose;
-	auto sheet = readSheet("toto.xlsx", "Trades");
-	// writefln("%(%s\n%)", sheet.cells);
+version(mir_test)
+	@safe
+	unittest {
+		import std.math : isClose;
+		auto sheet = readSheet("toto.xlsx", "Trades");
 
-	auto r = sheet.getRowString(1, 0, 2).array;
+		// writefln("%(%s\n%)", sheet.cells);
 
-	const double d = to!double(r[1]);
-	assert(isClose(d, 38204642.510000));
-}
+		auto r = sheet.getRowString(1, 0, 2).array;
 
-version(mir_test) @safe unittest {
-	const sheet = readSheet("leading_zeros.xlsx", "Sheet1");
-	auto a2 = sheet.cells.filter!(c => c.r == "A2");
-	assert(!a2.empty);
-	assert(a2.front.xmlValue == "0012", format("%s", a2.front));
-}
+		const double d = to!double(r[1]);
+		assert(isClose(d, 38204642.510000));
+	}
 
-version(mir_test) @safe unittest {
-	auto s = readSheet("datetimes.xlsx", "Sheet1");
-	//writefln("%s\n%(%s\n%)", s.maxPos, s.cells);
-	auto rslt = s.iterateColumn!DateTime(0, 0, 2);
-	assert(!rslt.empty);
+version(mir_test)
+	@safe
+	unittest {
+		const sheet = readSheet("leading_zeros.xlsx", "Sheet1");
+		auto a2 = sheet.cells.filter!(c => c.r == "A2");
+		assert(!a2.empty);
+		assert(a2.front.xmlValue == "0012", format("%s", a2.front));
+	}
 
-	auto target =
-		[ DateTime(Date(1986,1,11), TimeOfDay.init)
-		, DateTime(Date(1986,7,2), TimeOfDay.init)
-		];
-	assert(equal(rslt, target), format("\ngot: %s\nexp: %s\ntable %s", rslt
-				, target, s.toString()));
-}
+version(mir_test)
+	@safe
+	unittest {
+		auto s = readSheet("datetimes.xlsx", "Sheet1");
+		//writefln("%s\n%(%s\n%)", s.maxPos, s.cells);
+		auto rslt = s.iterateColumn!DateTime(0, 0, 2);
+		assert(!rslt.empty);
+
+		auto target = [DateTime(Date(1986, 1, 11), TimeOfDay.init),
+		               DateTime(Date(1986, 7, 2), TimeOfDay.init)];
+		assert(
+			equal(rslt, target),
+			format("\ngot: %s\nexp: %s\ntable %s", rslt, target, s.toString())
+		);
+	}
 
 version(mir_test) {
 	import std.algorithm.comparison : equal;
@@ -1434,19 +1557,21 @@ version(mir_test) {
 /** Variant of Phobos `benchmark` that, instead of sum all run times, returns
 	minimum of all run times as that is a more stable metric.
  */
-private Duration[funs.length] benchmarkMin(funs...)(uint n) if (funs.length >= 1) {
-    import std.algorithm.comparison : min;
-    Duration[funs.length] result;
-    auto sw = StopWatch(AutoStart.yes);
-    foreach (const i, fun; funs) {
-        result[i] = Duration.max;
+private
+Duration[funs.length] benchmarkMin(funs...)(uint n) if (funs.length >= 1) {
+	import std.algorithm.comparison : min;
+	Duration[funs.length] result;
+	auto sw = StopWatch(AutoStart.yes);
+	foreach (const i, fun; funs) {
+		result[i] = Duration.max;
 		foreach (const j; 0 .. n) {
-            sw.reset();
+			sw.reset();
 			sw.start();
-            fun();
-            sw.stop();
-            result[i] = min(result[i], sw.peek());
-        }
-    }
-    return result;
+			fun();
+			sw.stop();
+			result[i] = min(result[i], sw.peek());
+		}
+	}
+
+	return result;
 }
