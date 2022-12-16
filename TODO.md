@@ -50,7 +50,9 @@
 - Replace `assert(dom.children.length == 1);` with `enforce(dom.children.length == 1);`
   and similarly for other asserts.
 
-- Qualify some functions in std.zip as pure and then qualify code in xlsxreader.d as pure
+- Qualify some functions in std.zip as pure and then qualify D code in this
+  package as pure.  Qualify `std.zip.ZipArchive` members as, at least, `pure`
+  and then the functions in there that use them.
 
 - Make sure Sheet.cells is in the same data layout as SIL’s Matrix datatype
   added in version 2.48.

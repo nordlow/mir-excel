@@ -5,15 +5,13 @@ docs.json
 docs/
 __dummy.html
 
-libxlsxreader.a
-/xlsxreader
-xlsxreader.so
-xlsxreader.dylib
-xlsxreader.dll
-xlsxreader.a
-xlsxreader.lib
-xlsxreader-test-*
-
+*.a
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*-test-*
 *.exe
 *.o
 *.obj
