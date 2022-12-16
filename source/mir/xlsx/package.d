@@ -337,6 +337,10 @@ struct DenseTable {
         return Result(this, RowOffset(0));
     }
 
+    const(Cell)[][] rows() const return scope @safe pure nothrow {
+		return byRow().array;
+	}
+
     @SILignore
     Cell[]
         _cells; // TODO: use immutable(Cell)* _cells instead because length is same as extents.width*extents.height
