@@ -215,7 +215,7 @@ alias Value =
 /// ditto
 alias Data = Value; // for backwards compatibility
 
-/// Sheet cell that holds position for use in sparse storage.
+/// Sheet cell that holds `position` for use in sparse table storage.
 struct SparseCell {
     this(string location, RowOffset row, string t, string r, string v, string formula,
          string xmlValue, Position position) @safe pure {
@@ -260,6 +260,13 @@ struct SparseCell {
     Value value; ///< Decoded value.
 }
 alias Cell = SparseCell;
+
+/// Sheet cell that doesn’t need to hold position in dense table storage.
+struct DenseCell {
+    Value value; ///< Decoded cell value.
+    @SILignore
+    string formula; ///< Cell formula.
+}
 
 /** Excel table as a jagged array.
  *
