@@ -1,0 +1,68 @@
+name "mir-excel"
+targetType "library"
+description "A library for reading Excel files along with ION-(de)serialization support."
+
+authors "Per Nordlöw" "Robert Schadek"
+license "LGPL3"
+
+dflags "-vcolumns"
+
+importPaths "source"
+
+dependency "dxml" version="~>0.4.0"
+dependency "mir-core" version="*"
+dependency "mir-ion" version="*"
+
+buildType "unittest" {
+	buildOptions "unittests" "debugMode" "debugInfo"
+	versions "mir_test"
+	dflags "-allinst" "-checkaction=context"
+	dflags "-fsanitize=address" "-fsanitize=leak" platform="posix-ldc"
+}
+
+buildType "unittest-dip1000" {
+	buildOptions "unittests" "debugMode" "debugInfo"
+	versions "mir_test"
+	dflags "-allinst" "-checkaction=context"
+	dflags "-preview=dip1000" platform="dmd" # dmd-only until ldc 1.31.0 is released
+	dflags "-fsanitize=address" "-fsanitize=leak" platform="posix-ldc"
+}
+
+buildType "unittest-release" {
+	buildOptions "unittests" "releaseMode" "optimize" "inline"
+	versions "mir_test"
+}
+
+buildType "benchmark-release" {
+	buildOptions "unittests" "releaseMode" "optimize" "inline"
+	versions "mir_benchmark"
+	dflags "-mcpu=native"
+}
+
+buildType "benchmark-profile" {
+	buildOptions "unittests" "debugInfo" "profile"
+	versions "mir_benchmark"
+	dflags "-mcpu=native"
+	preRunCommands "rm -f trace.def trace.log"
+}
+
+buildType "benchmark-profileGC" { # currently DMD only
+	buildOptions "unittests" "debugInfo" "profileGC"
+	versions "mir_benchmark" "mir_profileGC"
+	dflags "-mcpu=native"
+	preRunCommands "rm -f trace.def trace.log"
+}
+
+buildType "benchmark-release-profile" {
+	buildOptions "unittests" "releaseMode" "optimize" "debugInfo" "profile"
+	versions "mir_benchmark"
+	dflags "-mcpu=native"
+	preRunCommands "rm -f trace.def trace.log"
+}
+
+buildType "benchmark-release-profileGC" { # currently DMD only
+	buildOptions "unittests" "releaseMode" "optimize" "debugInfo" "profileGC"
+	versions "mir_benchmark"
+	dflags "-mcpu=native"
+	preRunCommands "rm -f trace.def trace.log"
+}

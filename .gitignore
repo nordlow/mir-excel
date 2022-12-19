@@ -1,24 +1,20 @@
-# Compiled Object files
-*.o
-*.obj
+.dub
+dub.selections.json
 
-# Compiled Dynamic libraries
+docs.json
+docs/
+__dummy.html
+
+*.a
 *.so
 *.dylib
 *.dll
-
-# Compiled Static libraries
 *.a
 *.lib
-
-# Executables
+*-test-*
 *.exe
-
-# DUB
-.dub
-docs.json
-__dummy.html
-docs/
-
-# Code coverage
+*.o
+*.obj
 *.lst
+
+profilegc.log
