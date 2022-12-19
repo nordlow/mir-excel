@@ -4,8 +4,10 @@
 
 - Merge `SparseCell.location` and `SparseCell.position` into one single field
 
-- Ask Ilya if and how we should use mir.string_map. As element type for instance
-  in `Table.withHeaders(headers).rows`
+- Ask Ilya if and how we should use mir.string_map. Discuss using
+  mir.string_map.StringMap to represent table rows indexed via table column
+  title strings.  As element type for instance in
+  `Table.withHeaders(headers).rows`
 
 - Use STAX XML parser via calls to parseXML instead of decodeXML
 
