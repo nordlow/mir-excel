@@ -34,8 +34,10 @@ version(mir_profileGC)
 else version(mir_benchmark)
     enum runCount = 10;
 
-version(mir_benchmark)
+version(mir_benchmark) {
     enum tme = true; // time me
+	import std.stdio;
+}
 else
     enum tme = false; // don’t time
 
