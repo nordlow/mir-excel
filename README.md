@@ -1,1 +1,1 @@
-# mir-xlsx: An XLSX reader
+# mir-xlsx: A reader for .xlsx files
