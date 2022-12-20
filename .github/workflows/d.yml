@@ -15,11 +15,11 @@ permissions:
 
 jobs:
   test:
-    name: Build and Test
+    name: Build and Test on Ubuntu
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         dc:
         - dmd-latest
         - ldc-latest
@@ -33,7 +33,29 @@ jobs:
       run: |
         sudo apt install -y llvm
         llvm-symbolizer --version
-    - name: 'Build & Test'
+    - name: 'Build'
       run: |
         dub build
+    - name: 'Test'
+      run: |
+        dub test
+    name: Build and Test on Windows
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        dc:
+        - dmd-latest
+        - ldc-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: dlang-community/setup-dlang@v1.3.0
+      with:
+        compiler: ${{ matrix.dc }}
+    - name: 'Build'
+      run: |
+        dub build
+    - name: 'Test'
+      run: |
         dub test
