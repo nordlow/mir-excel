@@ -6,57 +6,34 @@ name: D
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
 
 jobs:
-  test-ubuntu:
-    name: Build and Test on Ubuntu
+  test:
+    name: Build and Test
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
         dc:
           - dmd-latest
           - ldc-latest
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dlang-community/setup-dlang@v1.3.0
-      - with:
-        compiler: ${{ matrix.dc }}
-    - name: 'Provision dependencies via APT'
-      run: |
-        sudo apt install -y llvm
-        llvm-symbolizer --version
-    - name: 'Build'
-      run: |
-        dub build
-    - name: 'Test'
-      run: |
-        dub test
-  test-windows:
-    name: Build and Test on Windows
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
-        dc:
-        - dmd-latest
-        - ldc-latest
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
     - uses: dlang-community/setup-dlang@v1.3.0
       with:
         compiler: ${{ matrix.dc }}
-    - name: 'Build'
+    - name: 'Provision dependencies via APT'
+      run: |
+        sudo apt install -y llvm
+        llvm-symbolizer --version
+    - name: 'Build & Test'
       run: |
         dub build
-    - name: 'Test'
-      run: |
         dub test
