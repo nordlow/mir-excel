@@ -4,7 +4,7 @@
 - Use common mir types
 - Read all XML-files to binary mir-ion and then to Tables
 - Get rid of the jagged arrays
-- Put ExcelAlgebraic
+- Use an algebraic cell value shared with mir-csv and mir-excel
 - Remove const fields
 - Remove aliases
 - Use mir’s version of timestamp parsing because it’s faster
@@ -13,6 +13,10 @@
 - Look at how Openpyxml._tables is implemented and use the same to decode Sheet.tables()
   https://samukweku.github.io/data-wrangling-blog/spreadsheet/python/pandas/openpyxl/2020/05/19/Access-Tables-In-Excel.html#Option-2---The-better-way-:
   Look at how multitable.xlsx is used.
+- Four inner loops that converts a dense table to binary ion
+  Iterate the sparse cells twice
+  - First iteration: Find the most dimensions of the dense matrix
+  - Second iteration: Fill in the values in the dense matrix
 
 - Make `RowRange` and `ColumnRange` @safe now that they store parenting Sheet by Value
 
