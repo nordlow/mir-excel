@@ -1,8 +1,8 @@
-name "mir-excel"
+name "mir-xlsx"
 targetType "library"
-description "A library for reading Excel files along with ION-(de)serialization support."
+description "A mir-ion (de)serialization frontend for XLSX files"
 
-authors "Per Nordlöw" "Robert Schadek"
+authors "Robert Schadek" "Per Nordlöw"
 license "LGPL3"
 
 dflags "-vcolumns"
