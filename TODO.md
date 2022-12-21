@@ -17,6 +17,8 @@
   Iterate the sparse cells twice
   - First iteration: Find the most dimensions of the dense matrix
   - Second iteration: Fill in the values in the dense matrix
+- IonNull and typeof(null) are serialized to the same code in binary ion
+- Same SIL-wrapping as for csv
 
 - Make `RowRange` and `ColumnRange` @safe now that they store parenting Sheet by Value
 
