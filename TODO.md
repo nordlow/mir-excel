@@ -10,9 +10,10 @@
 - Use mir’s version of timestamp parsing because it’s faster
 - Workbook => mir Object
 - Workbook => StringMap!(name, Sheet) eagerly like in JSON
-- Look at how Openpyxml._tables is implemented and use the same to decode Sheet.tables()
-  https://samukweku.github.io/data-wrangling-blog/spreadsheet/python/pandas/openpyxl/2020/05/19/Access-Tables-In-Excel.html#Option-2---The-better-way-:
-  Look at how multitable.xlsx is used.
+- Look at how `Openpyxml._tables` is implemented to detect tables
+  and use the same to decode Sheet.tables()
+  For reference see https://samukweku.github.io/data-wrangling-blog/spreadsheet/python/pandas/openpyxl/2020/05/19/Access-Tables-In-Excel.html#Option-2---The-better-way-:
+  Might be worthwhile looking into how multitable.xlsx is used.
 - Four inner loops that converts a dense table to binary ion
   Iterate the sparse cells twice
   - First iteration: Find the most dimensions of the dense matrix
