@@ -1,5 +1,19 @@
 # TODO
 
+- Benchmark: Use sum instead of min by rereading from memory. GC.disable()?
+- Use common mir types
+- Read all XML-files to binary mir-ion and then to Tables
+- Get rid of the jagged arrays
+- Put ExcelAlgebraic
+- Remove const fields
+- Remove aliases
+- Use mir’s version of timestamp parsing because it’s faster
+- Workbook => mir Object
+- Workbook => StringMap!(name, Sheet) eagerly like in JSON
+- Look at how Openpyxml._tables is implemented and use the same to decode Sheet.tables()
+  https://samukweku.github.io/data-wrangling-blog/spreadsheet/python/pandas/openpyxl/2020/05/19/Access-Tables-In-Excel.html#Option-2---The-better-way-:
+  Look at how multitable.xlsx is used.
+
 - Make `RowRange` and `ColumnRange` @safe now that they store parenting Sheet by Value
 
 - Merge `SparseCell.location` and `SparseCell.position` into one single field
