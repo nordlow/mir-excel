@@ -1,1 +1,1 @@
-# mir-xlsx: A reader for .xlsx files
+# mir-excel: A reader for Excel files with mir-ion (de)serialization support
