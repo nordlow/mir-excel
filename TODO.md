@@ -1,15 +1,27 @@
 # TODO
 
-- Benchmark: Use sum instead of min by rereading from memory. GC.disable()?
+- Rename benchmarkMin to benchmarkSum instead of min by rereading from memory
+  because that’s a more relevant benchmark because a min might exclude the cost
+  of GC-collects thereby rendering the benchmark results misguiding.
+
 - Use common mir types
+
 - Read all XML-files to binary mir-ion and then to Tables
+
 - Get rid of the jagged arrays
+
 - Use an algebraic cell value shared with mir-csv and mir-excel
+
 - Remove const fields
+
 - Remove aliases
+
 - Use mir’s version of timestamp parsing because it’s faster
+
 - Workbook => mir Object
+
 - Workbook => StringMap!(name, Sheet) eagerly like in JSON
+
 - Look at how `Openpyxml._tables` is implemented to detect tables
   and use the same to decode Sheet.tables()
   For reference see https://samukweku.github.io/data-wrangling-blog/spreadsheet/python/pandas/openpyxl/2020/05/19/Access-Tables-In-Excel.html#Option-2---The-better-way-:
@@ -19,7 +31,8 @@
   - First iteration: Find the most dimensions of the dense matrix
   - Second iteration: Fill in the values in the dense matrix
 - IonNull and typeof(null) are serialized to the same code in binary ion
-- Same SIL-wrapping as for csv
+
+- Same wrapping as for mir-csv
 
 - Make `RowRange` and `ColumnRange` @safe now that they store parenting Sheet by Value
 
@@ -85,6 +98,3 @@
 - Qualify some functions in std.zip as pure and then qualify D code in this
   package as pure.  Qualify `std.zip.ZipArchive` members as, at least, `pure`
   and then the functions in there that use them.
-
-- Make sure Sheet.cells is in the same data layout as SIL’s Matrix datatype
-  added in version 2.48.
