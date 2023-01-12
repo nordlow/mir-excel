@@ -1267,33 +1267,6 @@ version(mir_test)
         }
     }
 
-deprecated("Use dxml.util.decodeXML instead")
-string removeSpecialCharacter(string s) {
-    struct ToRe {
-        string from;
-        string to;
-    }
-
-    immutable ToRe[] toRe =
-        [ToRe("&amp;", "&"), ToRe("&gt;", "<"), ToRe("&lt;", ">"),
-         ToRe("&quot;", "\""), ToRe("&apos;", "'")];
-
-    string replaceStrings(string s) {
-        import std.algorithm.searching : canFind;
-        // TODO: use substitute.array
-        import std.array : replace;
-        foreach (const ref tr; toRe) {
-            while (canFind(s, tr.from)) {
-                s = s.replace(tr.from, tr.to);
-            }
-        }
-
-        return s;
-    }
-
-    return replaceStrings(s);
-}
-
 Cell[] readCells(ZipArchive za, ArchiveMember am) /* TODO: @safe */ {
     auto dom =
         za.expandTrusted(am).convertToString().parseDOM(); // TODO: cache?
@@ -1450,25 +1423,6 @@ Position elementMax(Position a, Position b) @safe pure nothrow @nogc {
     import std.algorithm.comparison : max;
     return Position(max(a.row, b.row), max(a.col, b.col));
 }
-
-deprecated("Use dxml.util.decodeXML instead")
-string specialCharacterReplacementReverse(string s) @safe pure nothrow {
-    import std.array : replace;
-    // TODO: reuse existing Phobos function or generalize to all special characters
-    return s.replace("&quot;", "\"").replace("&apos;", "'").replace("&lt;", "<")
-            .replace("&gt;", ">").replace("&amp;", "&");
-}
-
-version(none) // disabled because specialCharacterReplacementReverse is deprecated
-    version(mir_test)
-        @safe
-        pure nothrow unittest {
-            assert("&quot;".specialCharacterReplacementReverse == "\"");
-            assert("&apos;".specialCharacterReplacementReverse == "'");
-            assert("&lt;".specialCharacterReplacementReverse == "<");
-            assert("&gt;".specialCharacterReplacementReverse == ">");
-            assert("&amp;".specialCharacterReplacementReverse == "&");
-        }
 
 version(mir_test)
     @safe
