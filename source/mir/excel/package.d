@@ -1005,12 +1005,6 @@ string convertToString(inout(ubyte)[] d) @trusted {
     }
 }
 
-/// Read sheet names stored in `filename`.
-deprecated("Use `Workbook.fromFile(filename).sheetNameIds` instead")
-SheetNameId[] sheetNames(in string filename) @trusted {
-    return Workbook.fromFile(filename).sheetNameIds();
-}
-
 version(mir_test)
     @safe
     unittest {
@@ -1639,7 +1633,7 @@ version(mir_test)
                 .filter!(a => (!a.name.endsWith(
                     "data02.xlsx", "data03.xlsx", "data04.xlsx",
                     "row_col_format16.xlsx", "row_col_format18.xlsx")))) {
-            auto sn = sheetNames(de.name);
+			auto sn = Workbook.fromFile(de.name).sheetNameIds;
             foreach (const s; sn) {
                 totalSheetCount += 1;
                 auto sheet = readSheet(de.name, s.name);
