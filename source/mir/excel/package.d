@@ -933,7 +933,7 @@ struct Workbook {
     private string[] _sharedEntries;
 
     @SILignore
-    private const(Sheet)[] _sheets;
+    private Sheet[] _sheets;
 }
 
 version(mir_test)
@@ -1052,12 +1052,8 @@ RelationshipsById parseRelationships(ZipArchive za, ArchiveMember am) @safe {
 }
 
 /// Read sheet named `sheetName` from `filename`.
-Sheet readSheet(in string filename, in string sheetName) @safe {
-    const SheetNameId[] sheets = Workbook.fromFile(filename).sheetNameIds();
-    auto sRng = sheets.filter!(s => s.name == sheetName);
-    enforce(!sRng.empty,
-            "No sheet with name " ~ sheetName ~ " found in file " ~ filename);
-    return readSheetImpl(filename, sRng.front.rid, sheetName);
+Sheet readSheet(in string filename, in string sheetName) @trusted {
+	return Workbook.fromFile(filename).sheets().filter!(sheet => sheet.name == sheetName).front;
 }
 
 string eatXlPrefix(scope return string fn) @safe pure nothrow @nogc {
@@ -1070,17 +1066,6 @@ string eatXlPrefix(scope return string fn) @safe pure nothrow @nogc {
     }
 
     return fn;
-}
-
-deprecated(
-    "Use Workbook.fromFile(filename).sheets().filter(sheet => sheet.name == sheetName) instead"
-) Sheet readSheetImpl(in string filename, in string rid,
-                      in string sheetName) @safe {
-    scope(failure)
-        writefln("Failed at file '%s' and sheet '%s'", filename, rid);
-    auto za = readFile(filename);
-    auto rels = parseRelationships(za, za.directory[relsXMLPath]);
-    return extractSheet(za, rels, filename, rid, sheetName);
 }
 
 private
