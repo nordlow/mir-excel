@@ -1267,33 +1267,6 @@ version(mir_test)
         }
     }
 
-deprecated("Use dxml.util.decodeXML instead")
-string removeSpecialCharacter(string s) {
-    struct ToRe {
-        string from;
-        string to;
-    }
-
-    immutable ToRe[] toRe =
-        [ToRe("&amp;", "&"), ToRe("&gt;", "<"), ToRe("&lt;", ">"),
-         ToRe("&quot;", "\""), ToRe("&apos;", "'")];
-
-    string replaceStrings(string s) {
-        import std.algorithm.searching : canFind;
-        // TODO: use substitute.array
-        import std.array : replace;
-        foreach (const ref tr; toRe) {
-            while (canFind(s, tr.from)) {
-                s = s.replace(tr.from, tr.to);
-            }
-        }
-
-        return s;
-    }
-
-    return replaceStrings(s);
-}
-
 Cell[] readCells(ZipArchive za, ArchiveMember am) /* TODO: @safe */ {
     auto dom =
         za.expandTrusted(am).convertToString().parseDOM(); // TODO: cache?
