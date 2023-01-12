@@ -1451,21 +1451,6 @@ Position elementMax(Position a, Position b) @safe pure nothrow @nogc {
     return Position(max(a.row, b.row), max(a.col, b.col));
 }
 
-deprecated("This function is unused and will therefore be removed")
-string specialCharacterReplacement(string s) @safe pure nothrow {
-    import std.algorithm.iteration : substitute;
-    import std.array : replace;
-    // TODO: use substitute.array
-    return s.replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;")
-            .replace(">", "&gt;").replace("&", "&amp;");
-}
-
-version(mir_test)
-    @safe
-    pure nothrow unittest {
-        assert("&".specialCharacterReplacement == "&amp;");
-    }
-
 deprecated("Use dxml.util.decodeXML instead")
 string specialCharacterReplacementReverse(string s) @safe pure nothrow {
     import std.array : replace;
