@@ -32,8 +32,6 @@
 
 - Same wrapping as for mir-csv
 
-- Make `RowRange` and `ColumnRange` @safe now that they store parenting Sheet by Value
-
 - Merge `SparseCell.location` and `SparseCell.position` into one single field
 
 - Ask Ilya if and how we should use mir.string_map. Discuss using
