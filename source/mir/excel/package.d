@@ -422,11 +422,11 @@ struct Sheet {
 
 @SILignore:
 
-    ColumnRange getColumn(ColumnOffset col, RowOffset startRow, RowOffset endRow) return scope @trusted {
+    ColumnRange getColumn(ColumnOffset col, RowOffset startRow, RowOffset endRow) return scope @safe {
         return typeof(return)(this, col, startRow, endRow);
     }
 
-    RowRange getRow(RowOffset row, ColumnOffset startColumn, ColumnOffset endColumn) return scope @trusted {
+    RowRange getRow(RowOffset row, ColumnOffset startColumn, ColumnOffset endColumn) return scope @safe {
         return typeof(return)(this, row, startColumn, endColumn);
     }
 }
