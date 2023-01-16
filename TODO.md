@@ -8,8 +8,6 @@
 
 - Read all XML-files to binary mir-ion and then to Tables
 
-- Get rid of the jagged arrays
-
 - Use an algebraic cell value shared with mir-csv and mir-excel
 
 - Remove const fields

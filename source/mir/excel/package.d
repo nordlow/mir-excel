@@ -276,25 +276,7 @@ struct DenseCell {
     string formula; ///< Cell formula.
 }
 
-/** Excel table as a jagged array.
- *
- * Ref: https://en.wikipedia.org/wiki/Jagged_array
- */
-struct JaggedTable {
-    inout(DenseCell[])[] cells() inout @safe pure nothrow @nogc {
-        pragma(inline, true);
-        return _cells;
-    }
-
-    @SILignore
-    DenseCell[][] _cells; /* Not to be referenced explicitly. */
-    alias _cells this; /** For backwards compatibility. */
-
-    @SILignore
-    RowWidth width; // TODO: use or remove
-}
-
-/** Excel jaggedTable as a multidimensional array.
+/** Excel table as a 2-dimensional dense array.
  *
  * Ref: https://en.wikipedia.org/wiki/Array_(data_type)
  */
@@ -388,25 +370,6 @@ struct Sheet {
     private immutable(Cell)[] _cells; ///< Cells of sheet.
 
     @SILignore
-    inout(JaggedTable) jaggedTable() inout return scope @property
-            @trusted pure nothrow { // TODO: make mutable?
-        pragma(inline, true);
-        if (_jaggedTable is _jaggedTable.init)
-            // TODO: remove this if and when we decide if jaggedTable should be removed:
-            *(cast(JaggedTable*) &_jaggedTable) = (cast() this).makeJaggedTable();
-        return _jaggedTable;
-    }
-
-    @SILignore
-    private
-    JaggedTable makeJaggedTable() const @trusted pure nothrow {
-        DenseCell[][] tab = new DenseCell[][](extent.height, extent.width);
-        foreach (const ref cell; cells)
-            tab[cell.position.row][cell.position.col] = DenseCell(cell.value, cell.xmlValue, cell.formula);
-        return typeof(return)(tab, extent.width);
-    }
-
-    @SILignore
     inout(DenseTable) denseTable() inout @property
             @trusted pure nothrow { // TODO: make mutable?
         pragma(inline, true);
@@ -424,9 +387,6 @@ struct Sheet {
             tab[cell.position.row * extent.width + cell.position.col] = DenseCell(cell.value, cell.xmlValue, cell.formula);
         return typeof(return)(tab, extent);
     }
-
-    @SILignore
-    private JaggedTable _jaggedTable;
 
     @SILignore
     private DenseTable _denseTable;
@@ -481,7 +441,6 @@ struct RowRange {
 
     this(Sheet sheet, RowOffset row, ColumnOffset startColumn,
          ColumnOffset endColumn) pure nothrow /* @nogc */ @safe {
-        assert(sheet.jaggedTable.length == sheet.extent.height);
         this.sheet = sheet;
         this.row = row;
         this.startColumn = startColumn;
@@ -516,7 +475,6 @@ struct ColumnRange {
 
     this(Sheet sheet, ColumnOffset col, RowOffset startRow,
          RowOffset endRow) @safe {
-        assert(sheet.jaggedTable.length == sheet.extent.height);
         this.sheet = sheet;
         this.col = col;
         this.startRow = startRow;
@@ -1400,15 +1358,7 @@ version(mir_test)
         import std.math : isClose;
         auto r = readSheet("test/data/multitable.xlsx", "wb1");
         {
-            const e = r.jaggedTable[12][5];
-            assert(isClose(e.xmlValue.to!double(), 26.74));
-        }
-        {
-            const e = r.jaggedTable[13][5];
-            assert(isClose(e.xmlValue.to!double(), -26.74));
-        }
-        {
-            const e = r.denseTable[RowOffset(12), ColumnOffset(5)];
+            const e = r.denseTable[RowOffset(12),ColumnOffset(5)];
             assert(isClose(e.xmlValue.to!double(), 26.74));
         }
         {
@@ -1475,9 +1425,9 @@ version(mir_test)
             );
         }
 
-        assert(s.jaggedTable.length == 16);
-        foreach (const DenseCell[] row; s.jaggedTable)
-            assert(row.length == 29);
+		assert(s.extent.width == 29);
+		assert(s.extent.height == 16);
+		assert(s.denseTable.cells.length == 29*16);
     }
 
 version(mir_test)
@@ -1505,10 +1455,9 @@ version(mir_test)
     @safe
     unittest {
         auto s = readSheet("test/data/multitable.xlsx", "Sheet3");
-        // writeln(s.jaggedTable[0][0].xmlValue);
-        assert(s.jaggedTable[0][0].xmlValue.to!long(),
-               format("%s", s.jaggedTable[0][0].xmlValue));
-        //assert(s.jaggedTable[0][0].canConvertTo(CellType.bool_));
+        assert(s.denseTable[RowOffset(0), ColumnOffset(0)].xmlValue.to!long(),
+			   format("%s", s.denseTable[RowOffset(0), ColumnOffset(0)].xmlValue));
+        //assert(s.denseTable[RowOffset(0), ColumnOffset(0)].canConvertTo(CellType.bool_));
     }
 
 version(mir_test)
@@ -1546,10 +1495,10 @@ version(mir_test)
     unittest {
         auto sheet = readSheet("test/data/testworkbook.xlsx", "ws1");
 
-        assert(sheet.jaggedTable[2][3].xmlValue == "1337");
-        assert(sheet.jaggedTable[2][4].xmlValue == "hello");
-        assert(sheet.jaggedTable[3][4].xmlValue == "sil");
-        assert(sheet.jaggedTable[4][4].xmlValue == "foo");
+        assert(sheet.denseTable[RowOffset(2), ColumnOffset(3)].xmlValue == "1337");
+        assert(sheet.denseTable[RowOffset(2), ColumnOffset(4)].xmlValue == "hello");
+        assert(sheet.denseTable[RowOffset(3), ColumnOffset(4)].xmlValue == "sil");
+        assert(sheet.denseTable[RowOffset(4), ColumnOffset(4)].xmlValue == "foo");
 
         auto r1 = sheet.getColumn(ColumnOffset(3), RowOffset(2), RowOffset(5)).map!(_ => _.value);
         assert(equal(r1, ["1337", "2", "3"]));
