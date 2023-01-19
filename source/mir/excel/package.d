@@ -911,8 +911,7 @@ version(mir_benchmark)
         const path = "test/data/50xP_sheet1.xlsx";
         import std.meta : AliasSeq;
         void use_sheetNamesAndreadSheet() @trusted {
-            foreach (const i, const ref s; sheetNames(path)) {
-                auto sheet = readSheet(path, s.name);
+            foreach (const _, const ref s; Workbook.fromFile(path).sheets) {
             }
         }
 
@@ -928,10 +927,10 @@ version(mir_benchmark)
 
         alias funs = AliasSeq!(/* use_sheetNamesAndreadSheet, */
             use_bySheet);
-        auto results = benchmarkMin!(funs)(runCount);
+        auto results = benchmarkSum!(funs)(runCount);
         foreach (const i, fun; funs) {
             writeln(fun.stringof[0 .. $ - 2], "(\"", path, "\") took ",
-                    results[i]);
+                    results[i] / runCount);
         }
     }
 
@@ -1545,6 +1544,24 @@ version(mir_test) {
 	minimum of all run times as that is a more stable metric.
  */
 version(mir_benchmark)
+{
+    private
+    Duration[funs.length] benchmarkSum(funs...)(uint n) if (funs.length >= 1) {
+        import std.algorithm.comparison : min;
+        Duration[funs.length] result;
+        auto sw = StopWatch(AutoStart.yes);
+        foreach (const i, fun; funs) {
+            result[i] = Duration.init;
+            foreach (const j; 0 .. n) {
+                sw.reset();
+                sw.start();
+                fun();
+                sw.stop();
+                result[i] += sw.peek();
+            }
+        }
+        return result;
+    }
     private
     Duration[funs.length] benchmarkMin(funs...)(uint n) if (funs.length >= 1) {
         import std.algorithm.comparison : min;
@@ -1560,6 +1577,6 @@ version(mir_benchmark)
                 result[i] = min(result[i], sw.peek());
             }
         }
-
         return result;
     }
+}

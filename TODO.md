@@ -1,9 +1,5 @@
 # TODO
 
-- Rename benchmarkMin to benchmarkSum instead of min by rereading from memory
-  because that’s a more relevant benchmark because a min might exclude the cost
-  of GC-collects thereby rendering the benchmark results misguiding.
-
 - Use common mir types
 
 - Read all XML-files to binary mir-ion and then to Tables
