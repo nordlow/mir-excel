@@ -6,8 +6,6 @@
 
 - Remove const fields
 
-- Remove aliases
-
 - Use mir’s version of timestamp parsing because it’s faster
 
 - Workbook => mir Object
