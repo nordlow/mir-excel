@@ -14,7 +14,7 @@ import std.format : format;
 import std.traits : isIntegral, isFloatingPoint, isSomeString;
 import std.typecons : Nullable, nullable;
 import std.zip;
-import mir.algebraic : Algebraic, Variant, TypeSet;
+import mir.algebraic : Algebraic, Variant;
 import mir.reflection : reflectIgnore, ReflectDoc;
 import mir.ion.value : IonNull;
 import dxml.dom : DOMEntity, EntityType, parseDOM;
@@ -1077,7 +1077,7 @@ string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
     return ret.data;
 }
 
-string extractData(DOMEntity!string si) {
+string extractData(DOMEntity!string si) @safe {
     string tmp;
     foreach (ref tORr; si.children) {
         if (tORr.name == "t") {
@@ -1194,7 +1194,7 @@ version(mir_test)
         }
     }
 
-Cell[] readCells(ZipArchive za, ArchiveMember am) /* TODO: @safe */ {
+Cell[] readCells(ZipArchive za, ArchiveMember am) @safe {
     auto dom =
         za.expandTrusted(am).convertToString().parseDOM(); // TODO: cache?
     assert(dom.children.length == 1);
