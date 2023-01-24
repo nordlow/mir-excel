@@ -219,9 +219,8 @@ alias Data = Value; // for backwards compatibility
 
 /// Sheet cell that holds `position` for use in sparse table storage.
 struct SparseCell {
-    this(string location, RowOffset row, string t, string r, string v, string formula,
+    this(RowOffset row, string t, string r, string v, string formula,
          string xmlValue, Position position) @safe pure {
-        this.location = location;
         this.row = row;
         this.t = t;
         this.r = r;
@@ -231,12 +230,6 @@ struct SparseCell {
         this.position = position;
         this.value = xmlValue;
     }
-
-    @SILignore
-    string location; ///< Location.
-
-    @SILignore
-    alias loc = location;
 
     @SILignore
     RowOffset row; ///< Row. row[r]
@@ -1371,51 +1364,51 @@ version(mir_test)
     unittest {
         auto s = readSheet("test/data/multitable.xlsx", "wb1");
         const expectedCells = [
-            Cell("", RowOffset(3), "s", "D3", "0", "", "a",
+            Cell(RowOffset(3), "s", "D3", "0", "", "a",
                  Position(RowOffset(2), ColumnOffset(3))),
-            Cell("", RowOffset(3), "s", "E3", "1", "", "b",
+            Cell(RowOffset(3), "s", "E3", "1", "", "b",
                  Position(RowOffset(2), ColumnOffset(4))),
-            Cell("", RowOffset(4), "s", "D4", "2", "", "1",
+            Cell(RowOffset(4), "s", "D4", "2", "", "1",
                  Position(RowOffset(3), ColumnOffset(3))),
-            Cell("", RowOffset(4), "s", "E4", "3", "", "\"one\"",
+            Cell(RowOffset(4), "s", "E4", "3", "", "\"one\"",
                  Position(RowOffset(3), ColumnOffset(4))),
-            Cell("", RowOffset(5), "s", "D5", "4", "", "2",
+            Cell(RowOffset(5), "s", "D5", "4", "", "2",
                  Position(RowOffset(4), ColumnOffset(3))),
-            Cell("", RowOffset(5), "s", "E5", "5", "", "\"two\"",
+            Cell(RowOffset(5), "s", "E5", "5", "", "\"two\"",
                  Position(RowOffset(4), ColumnOffset(4))),
-            Cell("", RowOffset(6), "s", "D6", "6", "", "3",
+            Cell(RowOffset(6), "s", "D6", "6", "", "3",
                  Position(RowOffset(5), ColumnOffset(3))),
-            Cell("", RowOffset(6), "s", "E6", "7", "", "\"three\"",
+            Cell(RowOffset(6), "s", "E6", "7", "", "\"three\"",
                  Position(RowOffset(5), ColumnOffset(4))),
-            Cell("", RowOffset(7), "", "B7", "", "", "",
+            Cell(RowOffset(7), "", "B7", "", "", "",
                  Position(RowOffset(6), ColumnOffset(1))),
-            Cell("", RowOffset(7), "s", "F7", "1", "", "b",
+            Cell(RowOffset(7), "s", "F7", "1", "", "b",
                  Position(RowOffset(6), ColumnOffset(5))),
-            Cell("", RowOffset(7), "s", "G7", "0", "", "a",
+            Cell(RowOffset(7), "s", "G7", "0", "", "a",
                  Position(RowOffset(6), ColumnOffset(6))),
-            Cell("", RowOffset(8), "n", "C8", "0.504409722222222", "",
+            Cell(RowOffset(8), "n", "C8", "0.504409722222222", "",
                  "0.504409722222222", Position(RowOffset(7), ColumnOffset(2))),
-            Cell("", RowOffset(8), "s", "F8", "3", "", "\"one\"",
+            Cell(RowOffset(8), "s", "F8", "3", "", "\"one\"",
                  Position(RowOffset(7), ColumnOffset(5))),
-            Cell("", RowOffset(8), "s", "G8", "2", "", "1",
+            Cell(RowOffset(8), "s", "G8", "2", "", "1",
                  Position(RowOffset(7), ColumnOffset(6))),
-            Cell("", RowOffset(9), "s", "F9", "5", "", "\"two\"",
+            Cell(RowOffset(9), "s", "F9", "5", "", "\"two\"",
                  Position(RowOffset(8), ColumnOffset(5))),
-            Cell("", RowOffset(9), "s", "G9", "4", "", "2",
+            Cell(RowOffset(9), "s", "G9", "4", "", "2",
                  Position(RowOffset(8), ColumnOffset(6))),
-            Cell("", RowOffset(10), "s", "F10", "7", "", "\"three\"",
+            Cell(RowOffset(10), "s", "F10", "7", "", "\"three\"",
                  Position(RowOffset(9), ColumnOffset(5))),
-            Cell("", RowOffset(10), "s", "G10", "6", "", "3", Position(RowOffset(9), ColumnOffset(6))),
-            Cell("", RowOffset(11), "s", "AC11", "8", "", "Foo", Position(RowOffset(10), ColumnOffset(28))),
-            Cell("", RowOffset(12), "s", "B12", "9", "", "Hello World", Position(RowOffset(11), ColumnOffset(1))),
-            Cell("", RowOffset(13), "n", "E13", "13.37", "", "13.37", Position(RowOffset(12), ColumnOffset(4))),
-            Cell("", RowOffset(13), "n", "F13", "26.74", "E13*2", "26.74", Position(RowOffset(12), ColumnOffset(5))),
-            Cell("", RowOffset(14), "n", "F14", "-26.74", "-E13*2", "-26.74", Position(RowOffset(13), ColumnOffset(5))),
-            Cell("", RowOffset(16), "n", "B16", "1", "", "1", Position(RowOffset(15), ColumnOffset(1))),
-            Cell("", RowOffset(16), "n", "C16", "2", "", "2", Position(RowOffset(15), ColumnOffset(2))),
-            Cell("", RowOffset(16), "n", "D16", "3", "", "3", Position(RowOffset(15), ColumnOffset(3))),
-            Cell("", RowOffset(16), "n", "E16", "4", "", "4", Position(RowOffset(15), ColumnOffset(4))),
-            Cell("", RowOffset(16), "n", "F16", "5", "", "5", Position(RowOffset(15), ColumnOffset(5)))
+            Cell(RowOffset(10), "s", "G10", "6", "", "3", Position(RowOffset(9), ColumnOffset(6))),
+            Cell(RowOffset(11), "s", "AC11", "8", "", "Foo", Position(RowOffset(10), ColumnOffset(28))),
+            Cell(RowOffset(12), "s", "B12", "9", "", "Hello World", Position(RowOffset(11), ColumnOffset(1))),
+            Cell(RowOffset(13), "n", "E13", "13.37", "", "13.37", Position(RowOffset(12), ColumnOffset(4))),
+            Cell(RowOffset(13), "n", "F13", "26.74", "E13*2", "26.74", Position(RowOffset(12), ColumnOffset(5))),
+            Cell(RowOffset(14), "n", "F14", "-26.74", "-E13*2", "-26.74", Position(RowOffset(13), ColumnOffset(5))),
+            Cell(RowOffset(16), "n", "B16", "1", "", "1", Position(RowOffset(15), ColumnOffset(1))),
+            Cell(RowOffset(16), "n", "C16", "2", "", "2", Position(RowOffset(15), ColumnOffset(2))),
+            Cell(RowOffset(16), "n", "D16", "3", "", "3", Position(RowOffset(15), ColumnOffset(3))),
+            Cell(RowOffset(16), "n", "E16", "4", "", "4", Position(RowOffset(15), ColumnOffset(4))),
+            Cell(RowOffset(16), "n", "F16", "5", "", "5", Position(RowOffset(15), ColumnOffset(5)))
         ];
         foreach (const i, const ref cell; s.cells) {
             // compare all but last field for now as that’s subject to change
