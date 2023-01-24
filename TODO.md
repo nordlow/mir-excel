@@ -1,7 +1,5 @@
 # TODO
 
-- Use common mir types
-
 - Read all XML-files to binary mir-ion and then to Tables
 
 - Use an algebraic cell value shared with mir-csv and mir-excel
@@ -25,8 +23,6 @@
   - First iteration: Find the most dimensions of the dense matrix
   - Second iteration: Fill in the values in the dense matrix
 - IonNull and typeof(null) are serialized to the same code in binary ion
-
-- Same wrapping as for mir-csv
 
 - Merge `SparseCell.location` and `SparseCell.position` into one single field
 
