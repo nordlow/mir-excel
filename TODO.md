@@ -37,8 +37,6 @@
 
 - Replace row.attributes.filter!(a => a.name == "r").front with row.attributeNamed("r")
 
-- Make `readCells` safe
-
 - Cache parts or whole calculation of `dom` in `readCells`
 
 - In `readCells()`, can we reserve `ret` by looking up dimensions
