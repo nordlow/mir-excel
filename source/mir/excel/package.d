@@ -17,6 +17,7 @@ import std.zip;
 import mir.algebraic : Algebraic, Variant;
 import mir.reflection : reflectIgnore, ReflectDoc;
 import mir.ion.value : IonNull;
+import mir.timestamp : Timestamp;
 import dxml.dom : DOMEntity, EntityType, parseDOM;
 import dxml.util : decodeXML; // TODO: Replace with parseXML
 import dxml.parser : parseXML; // TODO: Use instead of decodeXML
@@ -212,7 +213,7 @@ struct Region {
  * to a `Result`.
  */
 alias Value =
-    Variant!(IonNull, bool, TimeOfDay, Date, DateTime, double, long, string);
+    Variant!(IonNull, bool, Timestamp, double, long, string);
 
 /// ditto
 alias Data = Value; // for backwards compatibility
