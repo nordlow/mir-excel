@@ -6,8 +6,6 @@
 
 - Remove const fields
 
-- Use mir’s version of timestamp parsing because it’s faster
-
 - Workbook => mir Object
 
 - Workbook => StringMap!(name, Sheet) eagerly like in JSON
