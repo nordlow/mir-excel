@@ -159,7 +159,7 @@ struct ColumnHeight {
 
 alias ColHeight = ColumnHeight;
 
-/** Cell position offset, starting at [0,0] for top-left cell.
+/** SparseCell position offset, starting at [0,0] for top-left cell.
 	See: https://support.socrata.com/hc/en-us/articles/115005306167-Limitations-of-Excel-and-CSV-Downloads
  */
 struct Position {
@@ -204,19 +204,16 @@ struct Region {
     Extent extent;
 }
 
-/** Cell value with `null` state.
+/** SparseCell value without `null` state.
+ */
+alias SparseValue = Variant!(bool, Timestamp, double, long, string);
+
+/** SparseCell value with `null` state.
  *
  * The state `null` is needed because dense table cells may be uninitialized
  * when copied from the sparse representation in `Sheet.cells`.
- *
- * `IonNull` is used instead of `typeof(null)` to avoid having Value be mapped
- * to a `Result`.
  */
-alias Value =
-    Variant!(IonNull, bool, Timestamp, double, long, string);
-
-/// ditto
-alias Data = Value; // for backwards compatibility
+alias DenseValue = Variant!(typeof(null), bool, Timestamp, double, long, string); // TODO: reuse `SparseValue`
 
 /// Sheet cell that holds `position` for use in sparse table storage.
 struct SparseCell {
@@ -253,21 +250,25 @@ struct SparseCell {
     @SILignore
     Position position; ///< Position of cell.
 
-    Value value; ///< Decoded value.
+    SparseValue value; ///< Decoded value.
 }
-alias Cell = SparseCell;
 
 /// Sheet cell that doesn’t need to hold position in dense table storage.
 struct DenseCell {
-    this(Value value, string xmlValue, string formula) @safe pure nothrow @nogc {
+    this(DenseValue value, string xmlValue, string formula) @safe pure nothrow @nogc {
         this.value = value;
         this.xmlValue = xmlValue;
         this.formula = formula;
     }
-    Value value; ///< Decoded cell value.
+    this(SparseValue value, string xmlValue, string formula) @safe pure nothrow @nogc {
+        this.value = value;
+        this.xmlValue = xmlValue;
+        this.formula = formula;
+    }
+    DenseValue value; ///< Decoded cell value.
 	string xmlValue;			// TODO: remove
     @SILignore
-    string formula; ///< Cell formula.
+    string formula; ///< SparseCell formula.
 }
 
 /** Excel table as a 2-dimensional dense array.
@@ -345,7 +346,7 @@ struct DenseTable {
 struct Sheet {
     import std.ascii : toUpper;
 
-    this(string name, immutable(Cell)[] cells,
+    this(string name, immutable(SparseCell)[] cells,
          Extent extent) @safe pure nothrow @nogc {
         this.name = name;
         this._cells = cells;
@@ -353,7 +354,7 @@ struct Sheet {
     }
 
     @SILignore
-    immutable(Cell)[]
+    immutable(SparseCell)[]
         cells() const @property return scope @safe pure nothrow @nogc {
         return _cells;
     }
@@ -361,7 +362,7 @@ struct Sheet {
     const string name; ///< Name of sheet.
 
     @SILignore
-    private immutable(Cell)[] _cells; ///< Cells of sheet.
+    private immutable(SparseCell)[] _cells; ///< Cells of sheet.
 
     @SILignore
     inout(DenseTable) denseTable() inout @property
@@ -649,10 +650,10 @@ Date stringToDate(string s) @safe {
 }
 
 bool tryConvertTo(T, S)(S var) {
-    return !(tryConvertToImpl!T(Data(var)).isNull());
+    return !(tryConvertToImpl!T(DenseValue(var)).isNull());
 }
 
-Nullable!(T) tryConvertToImpl(T)(Data var) {
+Nullable!(T) tryConvertToImpl(T)(DenseValue var) {
     try {
         return nullable(convertTo!T(var));
     } catch (Exception e) {
@@ -1009,8 +1010,8 @@ Sheet extractSheet(ZipArchive za, in RelationshipsById rels, in string filename,
                za.directory.keys())
     );
 
-    Cell[] cells1 = readCells(za, *sheet); // hot spot!
-    Cell[] cells = insertValueIntoCell(cells1, ss);
+    SparseCell[] cells1 = readCells(za, *sheet); // hot spot!
+    SparseCell[] cells = insertValueIntoCell(cells1, ss);
 
     Position maxPos = Position.origin;
     foreach (ref c; cells) {
@@ -1047,7 +1048,7 @@ string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
         foreach (ref tORr; si.children) {
             if (tORr.name == "t" && tORr.type == EntityType.elementStart
                     && !tORr.children.empty) {
-                //ret ~= Data(convert(tORr.children[0].text));
+                //ret ~= DenseValue(convert(tORr.children[0].text));
                 ret ~= tORr.children[0].text.decodeXML;
             } else if (tORr.name == "r") {
                 foreach (ref r; tORr.children.filter!(r => r.name == "t")) {
@@ -1057,13 +1058,13 @@ string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
                     }
                 }
             } else {
-                //ret ~= Data.init;
+                //ret ~= DenseValue.init;
                 ret ~= "";
             }
         }
 
         if (!tmp.empty) {
-            //ret ~= Data(convert(tmp));
+            //ret ~= DenseValue(convert(tmp));
             ret ~= tmp.decodeXML;
         }
     }
@@ -1188,7 +1189,7 @@ version(mir_test)
         }
     }
 
-Cell[] readCells(ZipArchive za, ArchiveMember am) @safe {
+SparseCell[] readCells(ZipArchive za, ArchiveMember am) @safe {
     auto dom =
         za.expandTrusted(am).convertToString().parseDOM(); // TODO: cache?
     assert(dom.children.length == 1);
@@ -1212,7 +1213,7 @@ Cell[] readCells(ZipArchive za, ArchiveMember am) @safe {
         }
 
         foreach (ref c; row.children.filter!(r => r.name == "c")) {
-            Cell tmp;
+            SparseCell tmp;
             tmp.row = RowOffset(row.attributes.filter!(a => a.name == "r").front
                                    .value.to!(typeof(RowOffset.value)));
             tmp.r = c.attributes.filter!(a => a.name == "r").front.value;
@@ -1263,7 +1264,7 @@ Cell[] readCells(ZipArchive za, ArchiveMember am) @safe {
 /**
  * Param: `ss` is the shared string (table)
  */
-Cell[] insertValueIntoCell(Cell[] cells,
+SparseCell[] insertValueIntoCell(SparseCell[] cells,
                            in string[] ss) @trusted /* TODO: pure */ {
     immutable excepted = ["f", /* formula */
                           "n", /* number */
@@ -1275,7 +1276,7 @@ Cell[] insertValueIntoCell(Cell[] cells,
                           "inlineStr" /* inline string */
     ]; // TODO: what are these?
     immutable same = ["n", "e", "str", "inlineStr"]; // TODO: what are these?
-    foreach (ref Cell c; cells) {
+    foreach (ref SparseCell c; cells) {
         // debug writeln("c.t:", c.t, " c.v:", c.v);
         assert(excepted.canFind(c.t) || c.t.empty,
                format("'%s' not in [%s]", c.t, excepted));
@@ -1365,51 +1366,51 @@ version(mir_test)
     unittest {
         auto s = readSheet("test/data/multitable.xlsx", "wb1");
         const expectedCells = [
-            Cell(RowOffset(3), "s", "D3", "0", "", "a",
+            SparseCell(RowOffset(3), "s", "D3", "0", "", "a",
                  Position(RowOffset(2), ColumnOffset(3))),
-            Cell(RowOffset(3), "s", "E3", "1", "", "b",
+            SparseCell(RowOffset(3), "s", "E3", "1", "", "b",
                  Position(RowOffset(2), ColumnOffset(4))),
-            Cell(RowOffset(4), "s", "D4", "2", "", "1",
+            SparseCell(RowOffset(4), "s", "D4", "2", "", "1",
                  Position(RowOffset(3), ColumnOffset(3))),
-            Cell(RowOffset(4), "s", "E4", "3", "", "\"one\"",
+            SparseCell(RowOffset(4), "s", "E4", "3", "", "\"one\"",
                  Position(RowOffset(3), ColumnOffset(4))),
-            Cell(RowOffset(5), "s", "D5", "4", "", "2",
+            SparseCell(RowOffset(5), "s", "D5", "4", "", "2",
                  Position(RowOffset(4), ColumnOffset(3))),
-            Cell(RowOffset(5), "s", "E5", "5", "", "\"two\"",
+            SparseCell(RowOffset(5), "s", "E5", "5", "", "\"two\"",
                  Position(RowOffset(4), ColumnOffset(4))),
-            Cell(RowOffset(6), "s", "D6", "6", "", "3",
+            SparseCell(RowOffset(6), "s", "D6", "6", "", "3",
                  Position(RowOffset(5), ColumnOffset(3))),
-            Cell(RowOffset(6), "s", "E6", "7", "", "\"three\"",
+            SparseCell(RowOffset(6), "s", "E6", "7", "", "\"three\"",
                  Position(RowOffset(5), ColumnOffset(4))),
-            Cell(RowOffset(7), "", "B7", "", "", "",
+            SparseCell(RowOffset(7), "", "B7", "", "", "",
                  Position(RowOffset(6), ColumnOffset(1))),
-            Cell(RowOffset(7), "s", "F7", "1", "", "b",
+            SparseCell(RowOffset(7), "s", "F7", "1", "", "b",
                  Position(RowOffset(6), ColumnOffset(5))),
-            Cell(RowOffset(7), "s", "G7", "0", "", "a",
+            SparseCell(RowOffset(7), "s", "G7", "0", "", "a",
                  Position(RowOffset(6), ColumnOffset(6))),
-            Cell(RowOffset(8), "n", "C8", "0.504409722222222", "",
+            SparseCell(RowOffset(8), "n", "C8", "0.504409722222222", "",
                  "0.504409722222222", Position(RowOffset(7), ColumnOffset(2))),
-            Cell(RowOffset(8), "s", "F8", "3", "", "\"one\"",
+            SparseCell(RowOffset(8), "s", "F8", "3", "", "\"one\"",
                  Position(RowOffset(7), ColumnOffset(5))),
-            Cell(RowOffset(8), "s", "G8", "2", "", "1",
+            SparseCell(RowOffset(8), "s", "G8", "2", "", "1",
                  Position(RowOffset(7), ColumnOffset(6))),
-            Cell(RowOffset(9), "s", "F9", "5", "", "\"two\"",
+            SparseCell(RowOffset(9), "s", "F9", "5", "", "\"two\"",
                  Position(RowOffset(8), ColumnOffset(5))),
-            Cell(RowOffset(9), "s", "G9", "4", "", "2",
+            SparseCell(RowOffset(9), "s", "G9", "4", "", "2",
                  Position(RowOffset(8), ColumnOffset(6))),
-            Cell(RowOffset(10), "s", "F10", "7", "", "\"three\"",
+            SparseCell(RowOffset(10), "s", "F10", "7", "", "\"three\"",
                  Position(RowOffset(9), ColumnOffset(5))),
-            Cell(RowOffset(10), "s", "G10", "6", "", "3", Position(RowOffset(9), ColumnOffset(6))),
-            Cell(RowOffset(11), "s", "AC11", "8", "", "Foo", Position(RowOffset(10), ColumnOffset(28))),
-            Cell(RowOffset(12), "s", "B12", "9", "", "Hello World", Position(RowOffset(11), ColumnOffset(1))),
-            Cell(RowOffset(13), "n", "E13", "13.37", "", "13.37", Position(RowOffset(12), ColumnOffset(4))),
-            Cell(RowOffset(13), "n", "F13", "26.74", "E13*2", "26.74", Position(RowOffset(12), ColumnOffset(5))),
-            Cell(RowOffset(14), "n", "F14", "-26.74", "-E13*2", "-26.74", Position(RowOffset(13), ColumnOffset(5))),
-            Cell(RowOffset(16), "n", "B16", "1", "", "1", Position(RowOffset(15), ColumnOffset(1))),
-            Cell(RowOffset(16), "n", "C16", "2", "", "2", Position(RowOffset(15), ColumnOffset(2))),
-            Cell(RowOffset(16), "n", "D16", "3", "", "3", Position(RowOffset(15), ColumnOffset(3))),
-            Cell(RowOffset(16), "n", "E16", "4", "", "4", Position(RowOffset(15), ColumnOffset(4))),
-            Cell(RowOffset(16), "n", "F16", "5", "", "5", Position(RowOffset(15), ColumnOffset(5)))
+            SparseCell(RowOffset(10), "s", "G10", "6", "", "3", Position(RowOffset(9), ColumnOffset(6))),
+            SparseCell(RowOffset(11), "s", "AC11", "8", "", "Foo", Position(RowOffset(10), ColumnOffset(28))),
+            SparseCell(RowOffset(12), "s", "B12", "9", "", "Hello World", Position(RowOffset(11), ColumnOffset(1))),
+            SparseCell(RowOffset(13), "n", "E13", "13.37", "", "13.37", Position(RowOffset(12), ColumnOffset(4))),
+            SparseCell(RowOffset(13), "n", "F13", "26.74", "E13*2", "26.74", Position(RowOffset(12), ColumnOffset(5))),
+            SparseCell(RowOffset(14), "n", "F14", "-26.74", "-E13*2", "-26.74", Position(RowOffset(13), ColumnOffset(5))),
+            SparseCell(RowOffset(16), "n", "B16", "1", "", "1", Position(RowOffset(15), ColumnOffset(1))),
+            SparseCell(RowOffset(16), "n", "C16", "2", "", "2", Position(RowOffset(15), ColumnOffset(2))),
+            SparseCell(RowOffset(16), "n", "D16", "3", "", "3", Position(RowOffset(15), ColumnOffset(3))),
+            SparseCell(RowOffset(16), "n", "E16", "4", "", "4", Position(RowOffset(15), ColumnOffset(4))),
+            SparseCell(RowOffset(16), "n", "F16", "5", "", "5", Position(RowOffset(15), ColumnOffset(5)))
         ];
         foreach (const i, const ref cell; s.cells) {
             // compare all but last field for now as that’s subject to change
@@ -1523,8 +1524,8 @@ version(mir_test)
     unittest {
         auto s = readSheet("test/data/datetimes.xlsx", "Sheet1");
         auto r = s.getColumn(ColumnOffset(0), RowOffset(0), RowOffset(2));
-		assert(equal(r, [DenseCell(Value(31423), "31423", ""),
-						 DenseCell(Value(31595), "31595", "")]));
+		assert(equal(r, [DenseCell(DenseValue(31423), "31423", ""),
+						 DenseCell(DenseValue(31595), "31595", "")]));
         auto expected = [DateTime(Date(1986, 1, 11), TimeOfDay.init),
 						 DateTime(Date(1986, 7, 2), TimeOfDay.init)];
         version(none) assert(equal(r, expected)); // TODO: enable when Value Date(Time) decoding bugs have been fixed
