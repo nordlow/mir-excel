@@ -215,9 +215,6 @@ struct Region {
 alias Value =
     Variant!(IonNull, bool, Timestamp, double, long, string);
 
-/// ditto
-alias Data = Value; // for backwards compatibility
-
 /// Sheet cell that holds `position` for use in sparse table storage.
 struct SparseCell {
     this(RowOffset row, string t, string r, string v, string formula,
@@ -649,10 +646,10 @@ Date stringToDate(string s) @safe {
 }
 
 bool tryConvertTo(T, S)(S var) {
-    return !(tryConvertToImpl!T(Data(var)).isNull());
+    return !(tryConvertToImpl!T(Value(var)).isNull());
 }
 
-Nullable!(T) tryConvertToImpl(T)(Data var) {
+Nullable!(T) tryConvertToImpl(T)(Value var) {
     try {
         return nullable(convertTo!T(var));
     } catch (Exception e) {
@@ -1047,7 +1044,7 @@ string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
         foreach (ref tORr; si.children) {
             if (tORr.name == "t" && tORr.type == EntityType.elementStart
                     && !tORr.children.empty) {
-                //ret ~= Data(convert(tORr.children[0].text));
+                //ret ~= Value(convert(tORr.children[0].text));
                 ret ~= tORr.children[0].text.decodeXML;
             } else if (tORr.name == "r") {
                 foreach (ref r; tORr.children.filter!(r => r.name == "t")) {
@@ -1057,13 +1054,13 @@ string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
                     }
                 }
             } else {
-                //ret ~= Data.init;
+                //ret ~= Value.init;
                 ret ~= "";
             }
         }
 
         if (!tmp.empty) {
-            //ret ~= Data(convert(tmp));
+            //ret ~= Value(convert(tmp));
             ret ~= tmp.decodeXML;
         }
     }
