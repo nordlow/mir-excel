@@ -1,9 +1,5 @@
 # TODO
 
-- Read all XML-files to binary mir-ion and then to Tables
-
-- Add formula type.
-
 - Use an algebraic cell value shared with mir-csv and mir-excel. Excel can
   contain formulas in cells.
 
@@ -22,8 +18,6 @@
   - First iteration: Find the most dimensions of the dense matrix
   - Second iteration: Fill in the values in the dense matrix
 - IonNull and typeof(null) are serialized to the same code in binary ion
-
-- Merge `SparseCell.location` and `SparseCell.position` into one single field
 
 - Ask Ilya if and how we should use mir.string_map. Discuss using
   mir.string_map.StringMap to represent table rows indexed via table column
@@ -83,3 +77,7 @@
 - Qualify some functions in std.zip as pure and then qualify D code in this
   package as pure.  Qualify `std.zip.ZipArchive` members as, at least, `pure`
   and then the functions in there that use them.
+
+- Add formula type.
+
+- Read all XML-files to binary mir-ion and then to Tables
