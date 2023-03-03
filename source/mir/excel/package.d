@@ -346,7 +346,7 @@ struct DenseTable {
 struct Sheet {
     import std.ascii : toUpper;
 
-    this(string name, immutable(SparseCell)[] cells,
+    this(string name, SparseCell[] cells,
          Extent extent) @safe pure nothrow @nogc {
         this.name = name;
         this._cells = cells;
@@ -354,15 +354,15 @@ struct Sheet {
     }
 
     @SILignore
-    immutable(SparseCell)[]
-        cells() const @property return scope @safe pure nothrow @nogc {
+    inout(SparseCell)[]
+        cells() inout @property return scope @safe pure nothrow @nogc {
         return _cells;
     }
 
     const string name; ///< Name of sheet.
 
     @SILignore
-    private immutable(SparseCell)[] _cells; ///< Cells of sheet.
+    private SparseCell[] _cells; ///< Cells of sheet.
 
     @SILignore
     inout(DenseTable) denseTable() inout @property
@@ -781,6 +781,7 @@ struct Workbook {
     }
 
     /// Get (and cache) DOM.
+    @SILignore
     private DOMEntity!(string) workbookDOM() @safe /* TODO: pure */ {
         import dxml.parser : Config, SkipComments, SkipPI, SplitEmpty,
                              ThrowOnEntityRef;
@@ -1023,8 +1024,7 @@ Sheet extractSheet(ZipArchive za, in RelationshipsById rels, in string filename,
         Extent(RowWidth(maxPos.col + 1), ColumnHeight(maxPos.row + 1));
 
     // debug writeln("filename:", filename, " maxPos:", maxPos, " extent:", extent);
-    import std.exception : assumeUnique;
-    return Sheet(sheetName, cells.assumeUnique, extent);
+    return Sheet(sheetName, cells, extent);
 }
 
 string[] readSharedEntries(ZipArchive za, ArchiveMember am) @safe {
