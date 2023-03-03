@@ -28,23 +28,23 @@
 
 - Remove commented out D code
 
-- Clean up `readSharedEntries`
-
 - Replace row.attributes.filter!(a => a.name == "r").front with row.attributeNamed("r")
 
 - Cache parts or whole calculation of `dom` in `readCells`
 
+- Clean up `readCells`
 - In `readCells()`, can we reserve `ret` by looking up dimensions
   somewhere in DOM. Print string passed to DOM and look into it.
 
+- Clean up `readSharedEntries`
 - In `readSharedEntries()`, can we reserve `ret` by looking up dimensions
   somewhere in DOM. Print string passed to DOM and look into it.
 
-- Replace calls to array append `~=` with `Appender.put()` taking a range if possible
-
-- Clean up `readCells`
-
 - Clean up `insertValueIntoCell`
+
+- Clean up `parseRelationships`
+
+- Replace calls to array append `~=` with `Appender.put()` taking a range if possible
 
 - Avoid cast to `immutable` in `convertToString` and return `inout(ubyte)` instead
 
@@ -68,8 +68,6 @@
   module-scope public `parseRelationships` a thin wrapper on top of it. Cache
   the calculation of `parseRelationships` in an AA mapping from `ArchiveMember`
   to `RelationshipsById` if needed and store that AA in private `File` member.
-
-- Clean up `parseRelationships`
 
 - Replace `assert(dom.children.length == 1);` with `enforce(dom.children.length == 1);`
   and similarly for other asserts.
