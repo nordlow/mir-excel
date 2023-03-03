@@ -2,7 +2,10 @@
 
 - Read all XML-files to binary mir-ion and then to Tables
 
-- Use an algebraic cell value shared with mir-csv and mir-excel
+- Add formula type.
+
+- Use an algebraic cell value shared with mir-csv and mir-excel. Excel can
+  contain formulas in cells.
 
 - Remove const fields
 
